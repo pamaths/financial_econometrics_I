@@ -1,0 +1,296 @@
+% Simple LaTeX template for answering problem sets
+\documentclass[11pt]{article}
+
+% Encoding and fonts
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+
+% Math packages
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{mathtools}
+\usepackage{amsthm}
+
+% Page layout and graphics
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{pdflscape}
+
+% Utilities
+\usepackage{enumitem}
+\usepackage{siunitx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{makecell}
+\usepackage{natbib}
+\usepackage{adjustbox}
+
+% Theorem / problem environments
+\theoremstyle{definition}
+\newtheorem{problem}{Problem}
+\newtheorem{solution}{Solution}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+% Title information (edit as needed)
+\title{Financial Econometrics I: Course Project}
+\author{Matias Palmunen}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+This report summarizes results for the Financial Econometrics I course project. The project studies the characteristics of financial time series data focusing on typical characteristics such as volatility, heavy tails, and skewness and general non-nonormality of returns. The analyses were conducted using Python and relevant econometric libraries are listed in the appendix.
+
+Rest of this report is organized as follows. First, section 1 focuses on the exploratory data analysis of the returns data. Section 2 focuses on AR(1) modeling with GARCH(1,1) volatility. And finally, the third section concludes. 
+
+[Short data description here.]
+
+
+
+\section{Characteristics of Financial Time Series}\label{sec:characteristics}
+
+In this section I will use the stock (S\&PCOMP(RI)), commodity (RJEFCRT(TR)), and government bond (SPUTBIX(RI)) return data to analyze typical characteristics of financial time series on daily and weekly frequencies.
+
+
+\subsection{Exploratory analyses on index returns}
+In this section the analyses is done using daily and weekly log returns of the selected indices.
+The log returns are computed as 
+\begin{equation}\label{eq:log_return}
+r_t = \log\left(\frac{P_t}{P_{t-1}}\right) = \ln(P_t) - \ln(P_{t-1}).
+\end{equation}
+
+As we are mostly focused on weekly and daily frequencies, the daily returns are computed using consecutive trading days, while the weekly returns are computed using Sunday-to-Sunday periods.
+
+
+\subsubsection{Main Crashes and Booms on Index Returns}
+
+Table \ref{tbl:main_moves} presents the five largest positive returns (booms) and five largest negative returns (crashes) for the  S\&P 500 stock index. Returns are shown at both daily and weekly frequencies. Notable periods of extreme volatility include the 2008 Global Financial Crisis, the 2020 COVID-19 pandemic, and various other major economic events. Daily returns are calculated as log returns of consecutive trading days, while weekly returns aggregate returns over Sunday-to-Sunday periods.
+
+\begin{table}\label{tbl:main_moves}
+    \centering
+    % \small
+    \caption{Top 5 Booms and Crashes for S\&P 500, Government Bonds, and Commodities (Daily and Weekly)}
+
+    \begin{minipage}{\linewidth}
+        \centering
+        \textbf{Daily Returns}
+        
+        \include{tables/table_sp500_extreme_returns_daily}
+    \end{minipage}
+
+    \vspace{1em}
+
+    \begin{minipage}{\linewidth}
+        \centering
+        \textbf{Weekly Returns}
+        
+        \include{tables/table_sp500_extreme_returns_weekly}
+    \end{minipage}
+\end{table}
+
+The table shows that during a financial market distress the moves are typically very extreme. The next section studies if these extreme moves can be explained if we assume that the data generating process is normal. 
+
+
+
+
+\subsubsection{Normality Extremes For Larges moves}
+
+To see how likely the extreme events, such as those in Table \ref{tbl:main_moves} are under a assumed normal distribution, I calculate probabilities of events as extreme or more as
+
+\begin{equation}\label{eq:extreme_prob}
+P(X \geq x) = 1 - \Phi\left(\frac{x - \mu}{\sigma}\right) \quad \text{for booms,}
+\end{equation}
+and 
+\begin{equation*}
+P(X \leq x) = \Phi\left(\frac{x - \mu}{\sigma}\right) \quad \text{for crashes.}
+\end{equation*}
+In the equations \eqref{eq:extreme_prob} $\Phi$ is the cumulative distribution function of the standard normal distribution, and $\mu$ and $\sigma$ are the sample mean and standard deviation of the returns series, respectively. The results are summarized in Table \ref{tbl:normality_of_extremes}.
+
+The results in the table \ref{tbl:normality_of_extremes} show that the probabilities of observing such extreme returns under the normality assumption are extremely low, often in the range of $10^{-5}$ to $10^{-20}$ or even lower. This indicates that these extreme events that we observe in financial markets are extremely unlikely to occur if the returns were normally distributed.
+
+This observations further supports the well-known fact that financial returns exhibit fat tails and are not well-modeled by a normal distribution. In another words maginitude of these crashes is not in line with the assumed normality.
+
+\begin{table}[htbp]\label{tbl:normality_of_extremes}
+    \centering
+    \caption{Probabilities of Observed Extreme Returns Under Normality Assumption}
+
+    \begin{minipage}{0.48\linewidth}
+        Panel A: Weekly Returns
+        \centering
+        
+        \include{tables/table_normality_test_weekly}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\linewidth}
+        Panel B: Daily Returns
+        \centering
+        
+        \include{tables/table_normality_test_daily}
+    \end{minipage}
+\end{table}
+
+Now that we have established that the extreme returns are not in line with normality, next I will study more general characteristics of the return distributions and test if these are aligned with normality using the Jarque-Bera test.
+
+
+
+\subsubsection{Test of Normality using Jarque-Bera Test}
+
+The table \ref{tbl:jb_test} displays sample skewness, kurtosis, Jarque-Bera (JB) statistics, and corresponding p-values for daily and weekly returns of the S\&P 500 stock index, government bonds, and commodities. The JB test assesses whether the sample data deviates from a normal distribution by examining skewness and kurtosis.
+
+The statistics in table \ref{tbl:jb_test} are computed as
+\begin{align}
+S &= \frac{1}{n} \sum_{i=1}^n \left( \frac{r_i - \bar{r}}{\sigma} \right)^3 \quad \text{(Sample skewness)} \\
+K &= \frac{1}{n} \sum_{i=1}^n \left( \frac{r_i - \bar{r}}{\sigma} \right)^4 \quad \text{(Sample kurtosis)} \\
+JB &= \frac{n}{6}\left(S^2 + \frac{(K - 3)^2}{4}\right), \label{eq:jb_stat}
+\end{align}
+where $n$ is the sample size, $S$ is the sample skewness, and $K$ is the sample kurtosis. Under the null hypothesis of normality, the JB statistic follows a chi-squared distribution with 2 degrees of freedom, which I use to compute the p-values of the statistic. 
+
+Analyzing the results in Table \ref{tbl:jb_test}, I note that the JB statistics are significantly large across all asset classes and frequencies, leading to p-values effectively equal to zero. Thus, we reject the null hypothesis of normality for all return series.
+
+\begin{table}[htbp]\label{tbl:jb_test}
+    \caption{Skewness, Kurtosis and Jarque-Bera Test for Normality of Returns on a daily and weekly frequencies for S\&P 500, Government Bonds, and Commodities indices.}
+    \begin{minipage}{\linewidth}
+        Panel A: Weekly Returns
+        \centering
+        \include{tables/table_jb_test_weekly}
+    \end{minipage}
+    \vspace{1em}
+    \begin{minipage}{\linewidth}
+        Panel B: Daily Returns
+        \centering
+        \include{tables/table_jb_test_daily}
+    \end{minipage}
+\end{table}
+
+This further supports the earlier observations that asset returns are not normally distributed, and sample skewness and kurtosis values are not consistent with normality. Only exception is the skewness of government bonds weekly returns, which is close to zero.
+
+\subsubsection{Autocorrelation and the Ljung-Box test}
+
+Now that we have established that the returns are not normally distributed, next I will study if there is significant autocorrelation in the returns or in the squared returns.
+
+We do this with the Ljung-Box test, which tests the null hypothesis that there is no autocorrelation up to a specified lag $h$. The test statistic is computed as
+\begin{equation}\label{eq:ljung_box}
+Q = n(n + 2) \sum_{k=1}^h \frac{\hat{\rho}_k^2}{n - k},
+\end{equation}
+where $n$ is the sample size, $\hat{\rho}_k$ is the sample autocorrelation at lag $k$, and $h$ is the number of lags being tested. Under the null hypothesis, the $Q$ statistic follows a chi-squared distribution with $h$ degrees of freedom. The table \ref{tbl:lb_stats} shows the computed values for the LB 
+
+Figures \ref{fig:acf_returns} and \ref{fig:acf_squared} present the autocorrelation function (ACF) plots for daily and weekly returns as well as for squared daily and weekly returns of the selected assets. 
+
+The Figures \ref{fig:acf_returns} clearly display that there is only very small autocorrelation in the returns themselves, as most of the ACF values are within the 95\% confidence intervals. However, as expected, the ACF plot of squared returns \ref{fig:acf_squared} are highly positively autocorrelated, indicating volatility clustering and predictability in the squared returns.
+
+
+\begin{figure}\label{fig:acf_returns}
+    \centering
+    \includegraphics[width=\textwidth]{figures/acf_returns_daily_weekly.pdf}
+    \caption{Autocorrelation Function (ACF) and Barlett's formula for individual autocorrelations. The plots show the ACF and the computed 95\% confidence intervals for Daily Returns of S\&P 500, Government Bonds, and Commodities. The top row shows the ACF plots up to lag 10. Horizontal dashed lines in the ACF plots represent the 95\% confidence intervals. The CIs are calculated as $ci = 1.96/\sqrt{n}$. }
+\end{figure}
+
+\begin{figure}\label{fig:acf_squared}
+    \centering
+    \includegraphics[width=\textwidth]{figures/acf_squared_returns_daily_weekly.pdf}
+    \caption{Autocorrelation Function (ACF) and Barlett's formula for individual autocorrelations. The plots show the ACF and the computed 95\% confidence intervals for Squared Daily Returns of S\&P 500, Government Bonds, and Commodities. The top row shows the ACF plots up to lag 10. Horizontal dashed lines in the ACF plots represent the 95\% confidence intervals. The CIs are calculated as $ci = 1.96/\sqrt{n}$}
+\end{figure}
+
+The Ljung-Box statistics in the table \ref{tbl:lb_stats} confirms that the null hypothesis of no autocorrelation in $10$ lags is rejected at $5$\% confidence level for all asset classes and frequencies except Commodities at the daily frequency. 
+
+\begin{table}\label{tbl:lb_stats}
+    \centering
+    \caption{Ljung-Box Test Statistics and p-values for Daily and Weekly Returns and Squared Returns of S\&P 500, Government Bonds, and Commodities indices. The table }
+    \begin{minipage}{0.48\linewidth}
+        Panel A: Returns
+        \centering
+        \include{tables/table_lb_test_returns}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\linewidth}
+        Panel B: Squared Returns
+        \centering
+        \include{tables/table_lb_test_squared_returns}
+    \end{minipage}
+\end{table}
+
+
+To conclude this section, there is a significant autocorrelated component in the the returns series. In next section we check are these results robust to different frequencies. 
+
+
+
+
+\subsubsection{Robustness to change in Frequency}
+
+As sampling frequency decreases, from daily to weekly and to monthly returns should tend towards normality if they are independent with finite second moment\footnote{Or satisfy some other conditions for CLT to hold} then by CLT the returns should be closer to normality longer sampling periods. 
+
+Looking at the tables \ref{tbl:normality_of_extremes} of extremes and the table of normality tests \ref{tbl:jb_test} this is exactly what we see. The estreme moves are less extreme (in terms of $Z$ score) on weekly frequencies than in daily. Similarly JB statistics tend to be smaller for longer frequencies. 
+
+For the S\&P 500 index, table \ref{tbl:temporal_aggregation_sp500} summarizes this result on daily, weekly, monthly, and yearly and monthly frequencies. Looking at the table I find that returns become closer to normal with smaller skewness and kurtosis values and lower JB statistics and higher p-values as frequency decreases. Similarly, the autocorrelations tend to be stronger at lower frequencies as displayed by the Ljung-Box statistics.
+
+\begin{table}
+    \centering
+    \caption{Effect of Temporal Aggregation on Normality of S\&P 500 Returns}
+    \include{tables/table_temporal_aggregation}
+\end{table}
+
+
+
+\subsection{Diagnostics for a Portfolio}
+
+In this section I will study the characteristics of portfolios consisting of stocks, government bonds, and commodities. The portfolios are equal-weighted and the returns are computed as \emph{simple} returns as they allow easy cross sectional aggregation based on portfolio weights. The simple returns are computed as
+\begin{equation}\label{eq:simple_return}
+r_t = \frac{P_t - P_{t-1}}{P_{t-1}}.
+\end{equation}
+The analyses are done using daily and weekly simple returns of the selected indices.
+
+\subsubsection{Summary Statistics of Daily Portfolios}
+Table \ref{tbl:summary_port_daily} presents summary statistics for daily simple returns of individual index series and an equal-weighted portfolio of these assets. The statistics include mean return, standard deviation, skewness, kurtosis, minimum and maximum returns, and the number of observations.
+
+Comparing the portfolio to holding only stock index, we see that the portfolio has singificantly lower standard deviation, and extreme values than the stock index alone. 
+
+However, when aggregating cross sectionally we see that the skewness and kurtosis of the portfolio returns remain quite high and skewness is slightly elevated when compared to the single equity index. This indicates non-normality and the fact that with such a small number of likely cross-sectionaly dependent assets the diversification benefits are limited and the contemporaneous aggregate toward normality is weak and slow. In another words, we would need more assets that are more independent from one another. 
+
+\begin{table}\label{tbl:summary_port_daily}
+    \caption{Summary statistics for individual index series and a equal weighted portfolio of these assets. }
+    \include{tables/table_portfolio_summary_daily}
+\end{table}
+
+
+\subsubsection{Summary Statistics of Weekly Portfolios}
+
+Table \ref{tbl:summary_port_weekly} presents summary statistics for weekly asset and portfolio returns, similarly as the daily table \ref{tbl:summary_port_daily}. 
+
+Again, we see that the portfolio has lower standard deviation and extreme values than the stock index alone. Also skewness and kurtosis have similar behaviour and there is no strong convergence toward normality.
+
+In terms of temporal aggregation I note that the weekly returns have naturally higher means and standard deviations which should scale approximately linearly and with square root of time, respectively. However, I also note that the convergence toward normality in temporal dimension is weaker than with log returns, which is as expected since the simple return does not aggragate linearly over time, but rather multiplicatively. 
+
+\begin{table}\label{tbl:summary_port_weekly}
+    \caption{Summary statistics for individual index series and a equal weighted portfolio of these assets. }
+    \include{tables/table_portfolio_summary_weekly}
+\end{table}
+
+\subsubsection{Implications to Risk and Portfolio Management}
+
+From a risk and portfolio managemen perspective the results are interesting. First there are contemporaneious diversification benefits by aggregating across assets, which reduces standard deviation of the portfolio and increases diversification. This diversification is costly in terms of lower expected returns, however for each unit of risk the portfolio return increases as if the assets added to the portfolio are not perfectly correlated.
+
+Second the weak convergence towards normality implies that normal distributions should be used only for large portfolios with multiple independent assets. For small portfolios the non-normality is significant and should be taken into account in risk management. This is especially true in times of market distress when extreme moves are more likely to occur.
+
+% Finally, the temporal aggregation results imply that for longer investment horizons normality assumption becomes more valid, however this convergence is slow and weak especially for small portfolios. Thus, even for longer investment horizons non-normality should be taken into account in risk management and portfolio optimization.
+
+
+\section{Modeling Volatility and Non-Normality}
+
+In this section $\dots$
+
+
+
+
+
+\appendix
+\cite{drechsler2017deposits}
+
+\section{Python Libraries}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}
+
+
