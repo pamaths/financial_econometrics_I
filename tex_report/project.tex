@@ -40,24 +40,23 @@
 \begin{document}
 \maketitle
 
-This report summarizes results for the Financial Econometrics I course project. The project studies the characteristics of financial time series data focusing on typical characteristics such as volatility, heavy tails, and skewness and general non-nonormality of returns. The analyses were conducted using Python and relevant econometric libraries are listed in the appendix.
+This report summarizes results for the Financial Econometrics I course project. The project studies the characteristics of financial time series data, focusing on typical features such as volatility clustering, heavy tails, skewness, and general non-normality of returns. The analyses were conducted using Python and relevant econometric libraries are listed in the appendix.
 
-Rest of this report is organized as follows. First, section 1 focuses on the exploratory data analysis of the returns data. Section 2 focuses on AR(1) modeling with GARCH(1,1) volatility. And finally, the third section concludes. 
+The rest of this report is organized as follows. Section 1 focuses on exploratory data analysis of the return data. Section 2 focuses on AR(1) modeling with GARCH(1,1) volatility. Finally, Section 3 concludes. 
 
-[Short data description here.]
 
 
 
 \section{Characteristics of Financial Time Series}\label{sec:characteristics}
 
-In this section I will use the stock (S\&PCOMP(RI)), commodity (RJEFCRT(TR)), and government bond (SPUTBIX(RI)) return data to analyze typical characteristics of financial time series on daily and weekly frequencies.
+This section uses stock (S\&PCOMP(RI)), commodity (RJEFCRT(TR)), and government bond (SPUTBIX(RI)) return data to analyze typical characteristics of financial time series at daily and weekly frequencies.
 
 
-\subsection{Exploratory analyses on index returns}
-In this section the analyses is done using daily and weekly log returns of the selected indices.
+\subsection{Exploratory Analysis of Index Returns}
+This section analyzes daily and weekly log returns of the selected indices.
 The log returns are computed as 
 \begin{equation}\label{eq:log_return}
-r_t = \log\left(\frac{P_t}{P_{t-1}}\right) = \ln(P_t) - \ln(P_{t-1}).
+r_t = \log\left(\frac{P_t}{P_{t-1}}\right) = \log(P_t) - \log(P_{t-1}).
 \end{equation}
 
 As we are mostly focused on weekly and daily frequencies, the daily returns are computed using consecutive trading days, while the weekly returns are computed using Sunday-to-Sunday periods.
@@ -65,12 +64,13 @@ As we are mostly focused on weekly and daily frequencies, the daily returns are 
 
 \subsubsection{Main Crashes and Booms on Index Returns}
 
-Table \ref{tbl:main_moves} presents the five largest positive returns (booms) and five largest negative returns (crashes) for the  S\&P 500 stock index. Returns are shown at both daily and weekly frequencies. Notable periods of extreme volatility include the 2008 Global Financial Crisis, the 2020 COVID-19 pandemic, and various other major economic events. Daily returns are calculated as log returns of consecutive trading days, while weekly returns aggregate returns over Sunday-to-Sunday periods.
+Table \ref{tbl:main_moves} presents the five largest positive returns (booms) and five largest negative returns (crashes) for the S\&P 500 stock index at both daily and weekly frequencies. Notable periods of extreme volatility include the 2008 Global Financial Crisis, the 2020 COVID-19 pandemic, and various other major economic events. Daily returns are calculated as log returns of consecutive trading days, while weekly returns aggregate returns over Sunday-to-Sunday periods.
 
-\begin{table}\label{tbl:main_moves}
+\begin{table}
     \centering
     % \small
     \caption{Top 5 Booms and Crashes for S\&P 500, Government Bonds, and Commodities (Daily and Weekly)}
+    \label{tbl:main_moves}
 
     \begin{minipage}{\linewidth}
         \centering
@@ -89,14 +89,14 @@ Table \ref{tbl:main_moves} presents the five largest positive returns (booms) an
     \end{minipage}
 \end{table}
 
-The table shows that during a financial market distress the moves are typically very extreme. The next section studies if these extreme moves can be explained if we assume that the data generating process is normal. 
+The table shows that during financial market distress, price movements are typically very extreme. The next section examines whether these extreme moves can be explained under the assumption that the data generating process is normal. 
 
 
 
 
-\subsubsection{Normality Extremes For Larges moves}
+\subsubsection{Normality of Extreme Moves}
 
-To see how likely the extreme events, such as those in Table \ref{tbl:main_moves} are under a assumed normal distribution, I calculate probabilities of events as extreme or more as
+To assess how likely extreme events such as those in Table \ref{tbl:main_moves} are under an assumed normal distribution, I calculate probabilities of events as extreme or more extreme as
 
 \begin{equation}\label{eq:extreme_prob}
 P(X \geq x) = 1 - \Phi\left(\frac{x - \mu}{\sigma}\right) \quad \text{for booms,}
@@ -105,15 +105,16 @@ and
 \begin{equation*}
 P(X \leq x) = \Phi\left(\frac{x - \mu}{\sigma}\right) \quad \text{for crashes.}
 \end{equation*}
-In the equations \eqref{eq:extreme_prob} $\Phi$ is the cumulative distribution function of the standard normal distribution, and $\mu$ and $\sigma$ are the sample mean and standard deviation of the returns series, respectively. The results are summarized in Table \ref{tbl:normality_of_extremes}.
+In equation \eqref{eq:extreme_prob}, $\Phi$ is the cumulative distribution function of the standard normal distribution, and $\mu$ and $\sigma$ are the sample mean and standard deviation of the return series, respectively. The results are summarized in Table \ref{tbl:normality_of_extremes}.
 
-The results in the table \ref{tbl:normality_of_extremes} show that the probabilities of observing such extreme returns under the normality assumption are extremely low, often in the range of $10^{-5}$ to $10^{-20}$ or even lower. This indicates that these extreme events that we observe in financial markets are extremely unlikely to occur if the returns were normally distributed.
+Table \ref{tbl:normality_of_extremes} shows that the probabilities of observing such extreme returns under the normality assumption are extremely low, often in the range of $10^{-5}$ to $10^{-20}$ or lower. This indicates that extreme events observed in financial markets are extremely unlikely to occur if returns were normally distributed.
 
-This observations further supports the well-known fact that financial returns exhibit fat tails and are not well-modeled by a normal distribution. In another words maginitude of these crashes is not in line with the assumed normality.
+These observations further support the well-known fact that financial returns exhibit fat tails and are not well-modeled by a normal distribution. In other words, the magnitude of these crashes is inconsistent with the normality assumption.
 
-\begin{table}[htbp]\label{tbl:normality_of_extremes}
+\begin{table}[htbp]
     \centering
     \caption{Probabilities of Observed Extreme Returns Under Normality Assumption}
+    \label{tbl:normality_of_extremes}
 
     \begin{minipage}{0.48\linewidth}
         Panel A: Weekly Returns
@@ -130,15 +131,15 @@ This observations further supports the well-known fact that financial returns ex
     \end{minipage}
 \end{table}
 
-Now that we have established that the extreme returns are not in line with normality, next I will study more general characteristics of the return distributions and test if these are aligned with normality using the Jarque-Bera test.
+Having established that extreme returns are inconsistent with normality, I next examine more general characteristics of the return distributions and test whether they are aligned with normality using the Jarque-Bera test.
 
 
 
 \subsubsection{Test of Normality using Jarque-Bera Test}
 
-The table \ref{tbl:jb_test} displays sample skewness, kurtosis, Jarque-Bera (JB) statistics, and corresponding p-values for daily and weekly returns of the S\&P 500 stock index, government bonds, and commodities. The JB test assesses whether the sample data deviates from a normal distribution by examining skewness and kurtosis.
+Table \ref{tbl:jb_test} displays sample skewness, kurtosis, Jarque-Bera (JB) statistics, and corresponding p-values for daily and weekly returns of the S\&P 500 stock index, government bonds, and commodities. The JB test assesses whether the sample data deviate from a normal distribution by examining skewness and kurtosis.
 
-The statistics in table \ref{tbl:jb_test} are computed as
+The statistics in Table \ref{tbl:jb_test} are computed as
 \begin{align}
 S &= \frac{1}{n} \sum_{i=1}^n \left( \frac{r_i - \bar{r}}{\sigma} \right)^3 \quad \text{(Sample skewness)} \\
 K &= \frac{1}{n} \sum_{i=1}^n \left( \frac{r_i - \bar{r}}{\sigma} \right)^4 \quad \text{(Sample kurtosis)} \\
@@ -146,10 +147,11 @@ JB &= \frac{n}{6}\left(S^2 + \frac{(K - 3)^2}{4}\right), \label{eq:jb_stat}
 \end{align}
 where $n$ is the sample size, $S$ is the sample skewness, and $K$ is the sample kurtosis. Under the null hypothesis of normality, the JB statistic follows a chi-squared distribution with 2 degrees of freedom, which I use to compute the p-values of the statistic. 
 
-Analyzing the results in Table \ref{tbl:jb_test}, I note that the JB statistics are significantly large across all asset classes and frequencies, leading to p-values effectively equal to zero. Thus, we reject the null hypothesis of normality for all return series.
+The results in Table \ref{tbl:jb_test} show that the JB statistics are significantly large across all asset classes and frequencies, with p-values effectively equal to zero. Thus, I reject the null hypothesis of normality for all return series.
 
-\begin{table}[htbp]\label{tbl:jb_test}
+\begin{table}[htbp]
     \caption{Skewness, Kurtosis and Jarque-Bera Test for Normality of Returns on a daily and weekly frequencies for S\&P 500, Government Bonds, and Commodities indices.}
+    \label{tbl:jb_test}
     \begin{minipage}{\linewidth}
         Panel A: Weekly Returns
         \centering
@@ -163,40 +165,43 @@ Analyzing the results in Table \ref{tbl:jb_test}, I note that the JB statistics 
     \end{minipage}
 \end{table}
 
-This further supports the earlier observations that asset returns are not normally distributed, and sample skewness and kurtosis values are not consistent with normality. Only exception is the skewness of government bonds weekly returns, which is close to zero.
+This further supports the earlier observations that asset returns are not normally distributed, and that sample skewness and kurtosis values are inconsistent with normality. The only exception is the skewness of government bond weekly returns, which is close to zero.
 
 \subsubsection{Autocorrelation and the Ljung-Box test}
 
-Now that we have established that the returns are not normally distributed, next I will study if there is significant autocorrelation in the returns or in the squared returns.
+Having established that returns are not normally distributed, I next examine whether there is significant autocorrelation in the returns or squared returns.
 
-We do this with the Ljung-Box test, which tests the null hypothesis that there is no autocorrelation up to a specified lag $h$. The test statistic is computed as
+This is done using the Ljung-Box test, which tests the null hypothesis of no autocorrelation up to a specified lag $h$. The test statistic is computed as
 \begin{equation}\label{eq:ljung_box}
 Q = n(n + 2) \sum_{k=1}^h \frac{\hat{\rho}_k^2}{n - k},
 \end{equation}
-where $n$ is the sample size, $\hat{\rho}_k$ is the sample autocorrelation at lag $k$, and $h$ is the number of lags being tested. Under the null hypothesis, the $Q$ statistic follows a chi-squared distribution with $h$ degrees of freedom. The table \ref{tbl:lb_stats} shows the computed values for the LB 
+where $n$ is the sample size, $\hat{\rho}_k$ is the sample autocorrelation at lag $k$, and $h$ is the number of lags being tested. Under the null hypothesis, the $Q$ statistic follows a chi-squared distribution with $h$ degrees of freedom. Table \ref{tbl:lb_stats} shows the computed Ljung-Box statistics.
 
-Figures \ref{fig:acf_returns} and \ref{fig:acf_squared} present the autocorrelation function (ACF) plots for daily and weekly returns as well as for squared daily and weekly returns of the selected assets. 
+Figure \ref{fig:acf_returns} present the autocorrelation function (ACF) plots for daily and weekly returns as well as for squared daily and weekly returns of the selected assets. 
 
-The Figures \ref{fig:acf_returns} clearly display that there is only very small autocorrelation in the returns themselves, as most of the ACF values are within the 95\% confidence intervals. However, as expected, the ACF plot of squared returns \ref{fig:acf_squared} are highly positively autocorrelated, indicating volatility clustering and predictability in the squared returns.
+Figure \ref{fig:acf_returns} clearly shows that there is only very small autocorrelation in the returns themselves, as most ACF values lie within the 95\% confidence intervals. However, as expected, the squared returns in Figure \ref{fig:acf_squared} are highly autocorrelated, indicating volatility clustering and predictability in the squared returns.
 
 
-\begin{figure}\label{fig:acf_returns}
+\begin{figure}
     \centering
     \includegraphics[width=\textwidth]{figures/acf_returns_daily_weekly.pdf}
     \caption{Autocorrelation Function (ACF) and Barlett's formula for individual autocorrelations. The plots show the ACF and the computed 95\% confidence intervals for Daily Returns of S\&P 500, Government Bonds, and Commodities. The top row shows the ACF plots up to lag 10. Horizontal dashed lines in the ACF plots represent the 95\% confidence intervals. The CIs are calculated as $ci = 1.96/\sqrt{n}$. }
+    \label{fig:acf_returns}
 \end{figure}
 
-\begin{figure}\label{fig:acf_squared}
+\begin{figure}
     \centering
     \includegraphics[width=\textwidth]{figures/acf_squared_returns_daily_weekly.pdf}
     \caption{Autocorrelation Function (ACF) and Barlett's formula for individual autocorrelations. The plots show the ACF and the computed 95\% confidence intervals for Squared Daily Returns of S\&P 500, Government Bonds, and Commodities. The top row shows the ACF plots up to lag 10. Horizontal dashed lines in the ACF plots represent the 95\% confidence intervals. The CIs are calculated as $ci = 1.96/\sqrt{n}$}
+    \label{fig:acf_squared}
 \end{figure}
 
-The Ljung-Box statistics in the table \ref{tbl:lb_stats} confirms that the null hypothesis of no autocorrelation in $10$ lags is rejected at $5$\% confidence level for all asset classes and frequencies except Commodities at the daily frequency. 
+The Ljung-Box statistics in Table \ref{tbl:lb_stats} confirm that the null hypothesis of no autocorrelation in 10 lags is rejected at the 5\% significance level for all asset classes and frequencies except commodities at the daily frequency.
 
-\begin{table}\label{tbl:lb_stats}
+\begin{table}
     \centering
-    \caption{Ljung-Box Test Statistics and p-values for Daily and Weekly Returns and Squared Returns of S\&P 500, Government Bonds, and Commodities indices. The table }
+    \caption{Ljung-Box Test Statistics and p-values for Daily and Weekly Returns and Squared Returns of S\&P 500, Government Bonds, and Commodities indices.}
+    \label{tbl:lb_stats}
     \begin{minipage}{0.48\linewidth}
         Panel A: Returns
         \centering
@@ -206,27 +211,28 @@ The Ljung-Box statistics in the table \ref{tbl:lb_stats} confirms that the null 
     \begin{minipage}{0.48\linewidth}
         Panel B: Squared Returns
         \centering
-        \include{tables/table_lb_test_squared_returns}
+        \include{tables/table_lb_test_squared_returns_prod}
     \end{minipage}
 \end{table}
 
 
-To conclude this section, there is a significant autocorrelated component in the the returns series. In next section we check are these results robust to different frequencies. 
+To conclude this section, there is a significant autocorrelated component in the return series. The next section examines whether these results are robust to different frequencies. 
 
 
 
 
 \subsubsection{Robustness to change in Frequency}
 
-As sampling frequency decreases, from daily to weekly and to monthly returns should tend towards normality if they are independent with finite second moment\footnote{Or satisfy some other conditions for CLT to hold} then by CLT the returns should be closer to normality longer sampling periods. 
+As sampling frequency decreases from daily to weekly to monthly, returns should tend toward normality if they are independent with finite second moments\footnote{Or satisfy other conditions for the CLT to hold.}. By the CLT, returns should be closer to normality at longer sampling periods.
 
-Looking at the tables \ref{tbl:normality_of_extremes} of extremes and the table of normality tests \ref{tbl:jb_test} this is exactly what we see. The estreme moves are less extreme (in terms of $Z$ score) on weekly frequencies than in daily. Similarly JB statistics tend to be smaller for longer frequencies. 
+Table \ref{tbl:normality_of_extremes} and Table \ref{tbl:jb_test} confirm this pattern. The extreme moves are less extreme (in terms of $Z$-score) at weekly frequencies than at daily frequencies. Similarly, JB statistics tend to be smaller at lower frequencies. 
 
-For the S\&P 500 index, table \ref{tbl:temporal_aggregation_sp500} summarizes this result on daily, weekly, monthly, and yearly and monthly frequencies. Looking at the table I find that returns become closer to normal with smaller skewness and kurtosis values and lower JB statistics and higher p-values as frequency decreases. Similarly, the autocorrelations tend to be stronger at lower frequencies as displayed by the Ljung-Box statistics.
+For the S\&P 500 index, Table \ref{tbl:temporal_agg} summarizes these results at daily, weekly, monthly, and yearly frequencies. Returns become closer to normal with smaller skewness and kurtosis values, lower JB statistics, and higher p-values as frequency decreases. Similarly, autocorrelations tend to be stronger at lower frequencies as indicated by the Ljung-Box statistics.
 
 \begin{table}
     \centering
     \caption{Effect of Temporal Aggregation on Normality of S\&P 500 Returns}
+    \label{tbl:temporal_agg}
     \include{tables/table_temporal_aggregation}
 \end{table}
 
@@ -234,52 +240,54 @@ For the S\&P 500 index, table \ref{tbl:temporal_aggregation_sp500} summarizes th
 
 \subsection{Diagnostics for a Portfolio}
 
-In this section I will study the characteristics of portfolios consisting of stocks, government bonds, and commodities. The portfolios are equal-weighted and the returns are computed as \emph{simple} returns as they allow easy cross sectional aggregation based on portfolio weights. The simple returns are computed as
+This section studies the characteristics of portfolios consisting of stocks, government bonds, and commodities. The portfolios are equal-weighted and the returns are computed as \emph{simple} returns as they allow easy cross-sectional aggregation based on portfolio weights. The simple returns are computed as
 \begin{equation}\label{eq:simple_return}
 r_t = \frac{P_t - P_{t-1}}{P_{t-1}}.
 \end{equation}
-The analyses are done using daily and weekly simple returns of the selected indices.
+The analysis uses daily and weekly simple returns of the selected indices.
 
 \subsubsection{Summary Statistics of Daily Portfolios}
 Table \ref{tbl:summary_port_daily} presents summary statistics for daily simple returns of individual index series and an equal-weighted portfolio of these assets. The statistics include mean return, standard deviation, skewness, kurtosis, minimum and maximum returns, and the number of observations.
 
-Comparing the portfolio to holding only stock index, we see that the portfolio has singificantly lower standard deviation, and extreme values than the stock index alone. 
+Comparing the portfolio to holding only the stock index, the portfolio has significantly lower standard deviation and less extreme values than the stock index alone. 
 
-However, when aggregating cross sectionally we see that the skewness and kurtosis of the portfolio returns remain quite high and skewness is slightly elevated when compared to the single equity index. This indicates non-normality and the fact that with such a small number of likely cross-sectionaly dependent assets the diversification benefits are limited and the contemporaneous aggregate toward normality is weak and slow. In another words, we would need more assets that are more independent from one another. 
+However, when aggregating cross-sectionally, the skewness and kurtosis of the portfolio returns remain quite high, with skewness slightly elevated compared to the single equity index. This indicates non-normality and suggests that with such a small number of likely cross-sectionally dependent assets, diversification benefits are limited and the contemporaneous aggregation toward normality is weak and slow. In other words, more independent assets would be needed. 
 
-\begin{table}\label{tbl:summary_port_daily}
-    \caption{Summary statistics for individual index series and a equal weighted portfolio of these assets. }
+\begin{table}
+    \caption{Summary statistics for individual index series and an equal-weighted portfolio of these assets.}
+    \label{tbl:summary_port_daily}
     \include{tables/table_portfolio_summary_daily}
 \end{table}
 
 
 \subsubsection{Summary Statistics of Weekly Portfolios}
 
-Table \ref{tbl:summary_port_weekly} presents summary statistics for weekly asset and portfolio returns, similarly as the daily table \ref{tbl:summary_port_daily}. 
+Table \ref{tbl:summary_port_weekly} presents summary statistics for weekly asset and portfolio returns, similar to the daily results in Table \ref{tbl:summary_port_daily}.
 
-Again, we see that the portfolio has lower standard deviation and extreme values than the stock index alone. Also skewness and kurtosis have similar behaviour and there is no strong convergence toward normality.
+Again, the portfolio has lower standard deviation and less extreme values than the stock index alone. Skewness and kurtosis exhibit similar behavior with no strong convergence toward normality.
 
-In terms of temporal aggregation I note that the weekly returns have naturally higher means and standard deviations which should scale approximately linearly and with square root of time, respectively. However, I also note that the convergence toward normality in temporal dimension is weaker than with log returns, which is as expected since the simple return does not aggragate linearly over time, but rather multiplicatively. 
+Regarding temporal aggregation, weekly returns naturally have higher means and standard deviations, which should scale approximately linearly and with the square root of time, respectively. However, convergence toward normality in the temporal dimension is weaker than with log returns, which is expected since simple returns aggregate multiplicatively rather than linearly over time. 
 
-\begin{table}\label{tbl:summary_port_weekly}
-    \caption{Summary statistics for individual index series and a equal weighted portfolio of these assets. }
+\begin{table}
+    \caption{Summary statistics for individual index series and an equal-weighted portfolio of these assets.}
+    \label{tbl:summary_port_weekly}
     \include{tables/table_portfolio_summary_weekly}
 \end{table}
 
-\subsubsection{Implications to Risk and Portfolio Management}
+\subsubsection{Implications for Risk and Portfolio Management}
 
-From a risk and portfolio managemen perspective the results are interesting. First there are contemporaneious diversification benefits by aggregating across assets, which reduces standard deviation of the portfolio and increases diversification. This diversification is costly in terms of lower expected returns, however for each unit of risk the portfolio return increases as if the assets added to the portfolio are not perfectly correlated.
+From a risk and portfolio management perspective, the results are interesting. First, there are contemporaneous diversification benefits from aggregating across assets, which reduces portfolio standard deviation. This diversification is costly in terms of lower expected returns; however, the Sharpe ratio improves if the assets added to the portfolio are not perfectly correlated.
 
-Second the weak convergence towards normality implies that normal distributions should be used only for large portfolios with multiple independent assets. For small portfolios the non-normality is significant and should be taken into account in risk management. This is especially true in times of market distress when extreme moves are more likely to occur.
+Second, the weak convergence toward normality implies that normal distributions should only be used for large portfolios with multiple independent assets. For small portfolios, non-normality is significant and should be accounted for in risk management. This is especially true during periods of market distress when extreme moves are more likely to occur.
 
 % Finally, the temporal aggregation results imply that for longer investment horizons normality assumption becomes more valid, however this convergence is slow and weak especially for small portfolios. Thus, even for longer investment horizons non-normality should be taken into account in risk management and portfolio optimization.
 
 
 \section{Modeling Volatility and Non-Normality}
 
-This section studies volatility modeling using GARCH(1,1) model for volatility of Corporate Bond and S\&P 500 stock index excess log returns. 
+This section studies volatility modeling using the GARCH(1,1) model for volatility of corporate bond and S\&P 500 stock index excess log returns.
 
-The returns are calculated as follows: First, I calcualte the daily excess returns for corporate bonds and stock index by subtracting the risk-free (proxied by the government bond returns) using simple returns, giving the simple excess returns for stocks and bonds as 
+The returns are calculated as follows: First, I calculate the daily excess returns for corporate bonds and the stock index by subtracting the risk-free rate (proxied by government bond returns) using simple returns, giving the simple excess returns for stocks and bonds as 
 \begin{equation}\label{eq:simple_excess_return}
 R_{i,t}^{excess} = R_{i,t} - R_{rf,t} \text{ for } i \in \{stocks, bonds\}.
 \end{equation}
@@ -288,87 +296,92 @@ Then, I convert the simple excess returns to log excess returns as
 r_{i,t}^{excess} = \log(1 + R_{i,t}^{excess}) \text{ for } i \in \{stocks, bonds\}.
 \end{equation}
 
-When building the GARCH model in this section I effectively assume that the excess log return process has a autocorrelated component, and the residual process follows a GARCH(1,1) model with non-normal innovations. In another words, the model is specified as
+When building the GARCH model in this section, I effectively assume that the excess log return process has an autocorrelated component, and the residual process follows a GARCH(1,1) model with non-normal innovations. In other words, the model is specified as
 \begin{align}
 r_{i,t}^{excess} &= \mu + \phi r_{i,t-1}^{excess} + \epsilon_{i,t}, \label{eq:ar1_garch_mean} \\
 \epsilon_{i,t} &= \sigma_{i,t} z_{i,t}, \label{eq:garch_residuals} \\
 \sigma_{i,t}^2 &= \omega + \alpha \epsilon_{i,t-1}^2 + \beta \sigma_{i,t-1}^2, \label{eq:garch_variance}
 \end{align}
-where $z_{i,t}$ are i.i.d. innovations following a Normal, a Student-t, or a Skewed Student-t distributions. It is worth to note that the specification of the AR(1) model I use in this project contains the intercept term $\mu$ as well as the lagged return term with coefficient $\phi$, I keep the intercept term because asset pricing theory predicts that expected excess returns should be positive on average, under the physical measure, due to risk premia associated with the risky assets.
+where $z_{i,t}$ are i.i.d. innovations following a Normal, Student-t, or Skewed Student-t distribution. Note that eventhought variables have the subscript $i$ the analysis is done in time series setting. It is worth noting that the AR(1) specification used in this project contains the intercept term $\mu$ as well as the lagged return term with coefficient $\phi$. I keep the intercept term because asset pricing theory predicts that expected excess returns should be positive on average under the physical measure due to risk premia associated with risky assets.
 
 
 
 
-\subsection{Estiamtion of GARCH model}
+\subsection{Estimation of GARCH Model}
 
 
-\subsubsection{Non-Normality and autocorrelation}
+\subsubsection{Non-Normality and Autocorrelation}
 
-Before starting to estimate the GARCH model, I first study the non-normality and autocorrelation characteristics of the excess log returns to confirm the model assumptions. Table \ref{tbl:non_nomrality_ex_returns} presents the Jarque-Bera and Ljung-Box statistics for daily excess log returns of Corporate Bonds and S\&P 500 stock index.
+Before estimating the GARCH model, I first examine the non-normality and autocorrelation characteristics of the excess log returns to confirm the model assumptions. Table \ref{tbl:non_normality_ex_returns} presents the Jarque-Bera and Ljung-Box statistics for daily excess log returns of corporate bonds and the S\&P 500 stock index.
 
-First, the Table \ref{tbl:non_nomrality_ex_returns} dispalyes very large Jarque-Bera statistics for both Corporate Bonds and S\&P 500 excess log returns, with p-values effectively equal to zero. This indicates that we reject the null hypothesis of normality for both return series, supporting the evidence of non-normality in financial returns.
+First, Table \ref{tbl:non_normality_ex_returns} displays very large Jarque-Bera statistics for both corporate bond and S\&P 500 excess log returns, with p-values effectively equal to zero. This indicates that I reject the null hypothesis of normality for both return series, supporting the evidence of non-normality in financial returns.
 
-Second, the Ljung-Box statistics for both return series are also significant, for both series at the 1\% confidence level. The autocorrelation effect tends to be even stronger in in the corporate bonds excess log returns as displayed by the very high Ljung-Box statistic and the p-value effectively equal to zero. These results indicate that there is significant autocorrelation in the excess log returns that we have to filter out before estimating the GARCH model.
+Second, the Ljung-Box statistics for both return series are also significant at the 1\% level. The autocorrelation effect tends to be even stronger in corporate bond excess log returns, as indicated by the very high Ljung-Box statistic and p-value effectively equal to zero. These results indicate significant autocorrelation in the excess log returns that must be filtered out before estimating the GARCH model.
 
-\begin{table}[htbp]\label{tbl:non_nomrality_ex_returns}
+\begin{table}[htbp]
     \centering
     \caption{Jarque-Bera, and Ljung-Box statistics for Corporate Bond and Stock (S\&P 500) excess log returns. Excess returns are computed by subtracting government bond returns from the respective simple asset returns.}
+    \label{tbl:non_normality_ex_returns}
     \include{tables/table_garch_diagnostics}
 \end{table}
 
 
-\subsubsection{AR(1) model to filter autocorrelation}
+\subsubsection{AR(1) Model to Filter Autocorrelation}
 
-To filter the observed autocorrelation in the excess log returns I use AR(1) model as specified in equation \eqref{eq:ar1_garch_mean}. The model is estimated using conditional maximum likelihood estimation (MLE). The estimated coefficients are displayed in table \ref{tbl:ar1_estimates}.
+To filter the observed autocorrelation in the excess log returns, I use an AR(1) model as specified in equation \eqref{eq:ar1_garch_mean}. The model is estimated using conditional maximum likelihood estimation (MLE). The estimated coefficients are displayed in Table \ref{tbl:ar1_estimates}.
 
-\begin{table}[htbp]\label{tbl:ar1_estimates}
+\begin{table}[htbp]
     \centering
     \caption{Estimated AR(1) Model for excess corporate bond and stock returns. The table displays the estimated coefficients along with their standard errors (in parentheses), t-statistics, and p-values. The model is estimated using conditional maximum likelihood estimation (MLE) with Normal distribution. The standard errors are Heteroscedasticity and Autocorrelation Consistent (HAC) standard errors with 6 lags.}
+    \label{tbl:ar1_estimates}
     \include{tables/table_ar1_coefficients}
 \end{table}
 
-The coefficients in table \ref{tbl:ar1_estimates} confirm that the autocorraltion component is non-existant in both series. However, the autocorraltion coefficient is larger for corporate bonds than stocks, and when standard errors are HAC adjusted the coefficient is not statisticaclly significant for stocks. Furthermore, the drift term is positive but as expected it is small in magnitude and significance, especially for corporate bonds.
+The coefficients in Table \ref{tbl:ar1_estimates} show that the autocorrelation component is small in both series. However, the autocorrelation coefficient is larger for corporate bonds than stocks, and when standard errors are HAC adjusted, the coefficient is not statistically significant for stocks. Furthermore, the drift term is positive but, as expected, small in magnitude and significance, especially for corporate bonds.
 
-The figure \ref{fig:ar1_residuals} displays the residuals from the estimated AR(1) models for both excess return series. We observe that there is singificant volatility clustering in both residual series, indicating that a time-varying volatility model such as GARCH is appropriate for modeling the residuals.
+Figure \ref{fig:ar1_residuals} displays the residuals from the estimated AR(1) models for both excess return series. There is significant volatility clustering in both residual series, indicating that a time-varying volatility model such as GARCH is appropriate for modeling the residuals.
 
-\begin{figure}[htbp]\label{fig:ar1_residuals}
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{figures/ar1_residuals.pdf}
     \caption{Residuals from the estimated AR(1) models for Corporate Bond and Stock (S\&P 500) excess log returns. The plots show the time series of residuals, highlighting volatility clustering in both series.}
+    \label{fig:ar1_residuals}
 \end{figure}
 
 
 
-\subsubsection{ARCH effects in AR(1) residuals}
+\subsubsection{ARCH Effects in AR(1) Residuals}
 
-Given the timevarying volatility in the estimated residuals, before going to GARCH estimation, I first test for ARCH effects in the AR(1) residuals using the Engle's ARCH test. The results are summarized in table \ref{tbl:arch_test}.
+Given the time-varying volatility in the estimated residuals, I first test for ARCH effects in the AR(1) residuals using Engle's ARCH test before proceeding to GARCH estimation. The results are summarized in Table \ref{tbl:arch_test}.
 
-\begin{table}[htbp]\label{tbl:arch_test}
+\begin{table}[htbp]
     \centering
     \caption{Engle's ARCH Lagrange Multiplier Test for ARCH effects in AR(1) residuals of Corporate Bond and Stock (S\&P 500) excess log returns. The table displays the test statistics along with their p-values. The null hypothesis of the test is that there are no ARCH effects up to lag 10. The test statistics tests the null hypothesis of $Var_t(\epsilon_{t+1}) = \sigma^2$, and under null the statistic follows a chi-squared distribution with degrees of freedom equal to the number of lags tested (here 4).}
+    \label{tbl:arch_test}
     \include{tables/table_arch_lm_test}
 \end{table}
-The results in table \ref{tbl:arch_test} show that the squared residuals from the AR(1) model exhibit statistically signficant autocorrelation, as the ARCH test statistics are large and the p-values are effectively equal to zero for both series. Thus, we reject the null hypothesis of no ARCH effects in both series.
+The results in Table \ref{tbl:arch_test} show that the squared residuals from the AR(1) model exhibit statistically significant autocorrelation, as the ARCH test statistics are large and the p-values are effectively equal to zero for both series. Thus, I reject the null hypothesis of no ARCH effects in both series.
 
 
-\subsubsection{GARCH model for AR(1) model residuals}
-Given the statistically signficant ARCH effects in the AR(1) squared residuals, I now proceed to estimate the GARCH(1,1) model to model the time-varying volatility, as specified in equations \eqref{eq:garch_residuals} and \eqref{eq:garch_variance}. The table \ref{tbl:garch_11} displays the estimated GARCH(1,1) model coefficients for both excess return series.
+\subsubsection{GARCH Model for AR(1) Residuals}
+Given the statistically significant ARCH effects in the AR(1) squared residuals, I now proceed to estimate the GARCH(1,1) model to capture the time-varying volatility, as specified in equations \eqref{eq:garch_residuals} and \eqref{eq:garch_variance}. Table \ref{tbl:garch_11} displays the estimated GARCH(1,1) model coefficients for both excess return series.
 
-\begin{table}\label{tbl:garch_11}
+\begin{table}
     \centering
     \caption{Estimated GARCH(1,1) Model for AR(1) residuals of Corporate Bond and Stock (S\&P 500) excess log returns with Normal innovations. The table displays the estimated coefficients along with their standard errors (in parentheses), t-statistics, and p-values. The model is estimated using conditional maximum likelihood estimation (MLE) with Normal distribution. The parameters are estimated from the residuals of the AR(1) model fitted to excess returns and for reasons of numerical stability the residuals are scaled by 100 before estimation. Because of the scaling the estimated paramter $\omega$ is in units of $100^2$, but the $\alpha$ and $\beta$, and $\alpha + \beta$ are not scaled (as these are scale invariant).}
+    \label{tbl:garch_11}
     \include{tables/table_garch_11_model}
 \end{table}
 
-Looking at the Table \ref{tbl:garch_11}, I note that the coefficients for both series are statistically significant at 1\% confidence level, and economically large in the maginitude.
+Table \ref{tbl:garch_11} shows that the coefficients for both series are statistically significant at the 1\% level and economically large in magnitude.
 
-Furthermore, the sum of the $\alpha$ and $\beta$ coefficients, also known as the persistence parameter, is close to 1 for both series, indicating high persistence in volatility shocks. This suggests that volatility shocks have a long-lasting effect and spikes in volatility decay slowly over time.
+Furthermore, the sum of the $\alpha$ and $\beta$ coefficients, also known as the persistence parameter, is close to 1 for both series, indicating high persistence in volatility shocks. This suggests that volatility shocks have long-lasting effects and that spikes in volatility decay slowly over time.
 
 
 \subsection{MLE or QMLE}\label{sec:garch_normal}
-The previous section showed that there is significant persistence in volatility shocks for both excess return series. In this section I will analyze the adequacy of Normal distribution for modeling the shocks in the GARCH innovation process. 
+The previous section showed that there is significant persistence in volatility shocks for both excess return series. This section analyzes the adequacy of the Normal distribution for modeling the shocks in the GARCH innovation process.
 
-The analysis in this section and in the next section applies Diebold-Gunther-Tay (DGT) test for goodness-of-fit of the assumed distribution for the GARCH innovations. The test and the way I apply it is described as follows: 
+The analysis in this section and the next applies the Diebold-Gunther-Tay (DGT) test for goodness-of-fit of the assumed distribution for the GARCH innovations. The test and its implementation are described as follows: 
 
 % [TODO explain the test procedure]
 \paragraph{DGT Test Implementation Details}  Let a fitted GARCH model deliver conditional volatility $\hat\sigma_t$ and standardized innovations
@@ -384,18 +397,19 @@ $$
 u_t \stackrel{iid}{\sim} U(0,1).
 $$
 
-I then implement the test in two parts. First, I check uniformity by partitioning $[0,1]$ into $N$ ($N = 40$) equal bins, let $F_n$ be the number of $u_t$ in bin $n$, and compute Pearson's statistic
+I implement the test in two parts. First, I check uniformity by partitioning $[0,1]$ into $N$ ($N = 40$) equal bins. Let $F_n$ be the number of $u_t$ in bin $n$, and compute Pearson's statistic
 $$
 \mathrm{DGT}(N) = \sum_{n=1}^N \frac{(F_n - T/N)^2}{T/N} \;\;\sim\;\; \chi^2(N-1)
 $$
 under $H_0$. Second, to check independence and dynamics I define centered PITs $v_t=u_t-1/2$ and apply a Ljung--Box test at lag $10$ to $v_t$ (and optionally higher moments), where the reported p-value corresponds to the joint null of no autocorrelation up to lag $m$. In the code, $u_t$ is computed as $F(\hat z_t)$ using the chosen $F$, the chi-square test uses the binned PIT counts, and the Ljung--Box test is applied to $v_t^k$ for selected moments $k$.
 
-\subsubsection{Estimate ML estimates for GARCH with Normal Distribution}
+\subsubsection{ML Estimates for GARCH with Normal Distribution}
 
-I start by estimating the GARCH(1,1) model for the residuals of the AR(1) model fitted in earlier section using Maximum Likelihood Estimation (MLE) assuming that the innovations follow a Normal distribution. Table \ref{tbl:garch_mle_normal} summarize the results of this estimation, and the adequacy of the Normal distribution for modeling the standardized residuals from the GARCH model by testing Normality of the GARCH model residuals using JB test.
-\begin{table}\label{tbl:garch_mle_normal}
+I start by estimating the GARCH(1,1) model for the residuals of the AR(1) model fitted in the earlier section using Maximum Likelihood Estimation (MLE), assuming that the innovations follow a Normal distribution. Table \ref{tbl:garch_mle_normal} summarizes the results of this estimation and tests the adequacy of the Normal distribution for modeling the standardized residuals from the GARCH model using the JB test.
+\begin{table}
     \centering
     \caption{Estimated GARCH(1,1) Model Parameters and Normality Test for Standardized Residuals, using the Maximum Likelihood Estimation (MLE) assuming Normal innovations. The first panel displays the estimated GARCH(1,1) model parameters along with their standard errors (in parentheses), t-statistics, and p-values. The second panel displays the Jarque-Bera statistics and p-values for testing normality of the standardized residuals from the GARCH model.}
+    \label{tbl:garch_mle_normal}
     \vspace{0.5em}
     \begin{minipage}{\linewidth}
         \centering
@@ -411,49 +425,51 @@ I start by estimating the GARCH(1,1) model for the residuals of the AR(1) model 
         \include{tables/table_garch_mle_normality}
     \end{minipage}
 \end{table}
-First panel in the table \ref{tbl:garch_mle_normal} displays the estimated GARCH(1,1) model parameters assuming Normal innovations. It is worth noting that the parameter estimates are the same as in table \ref{tbl:garch_11} since both estimations use MLE with Normal distribution. However, the standard errors are different as in the previous section they were computed using robust HAC standard errors, while here they are computed using the information matrix, which is valid under the assumption of correct model specification. 
+Panel A of Table \ref{tbl:garch_mle_normal} displays the estimated GARCH(1,1) model parameters assuming Normal innovations. The parameter estimates are the same as in Table \ref{tbl:garch_11} since both estimations use MLE with a Normal distribution. However, the standard errors differ: in the previous section they were computed using robust HAC standard errors, while here they are computed using the information matrix, which is valid under the assumption of correct model specification.
 
-However, as we can see in the the second panel of table \ref{tbl:garch_mle_normal}, these standard errors are likely to be too small as the Jarque-Bera statistics for the standardized residuals from the GARCH model are very large with p-values effectively equal to zero. 
+However, Panel B of Table \ref{tbl:garch_mle_normal} shows that these standard errors are likely too small, as the Jarque-Bera statistics for the standardized residuals from the GARCH model are very large with p-values effectively equal to zero.
 
-Thus, the assumption that the innovations forllow normality can be questioned, and we should consider estimators that weaken this normality assumption.
-
-
+Thus, the assumption that the innovations follow normality can be questioned, and estimators that weaken this normality assumption should be considered.
 
 
-\subsubsection{Estimate QML estimates for GARCH with Normal Distribution}
 
-To weaken the assumption of normality in the innovation process, I estimate the GARCH(1,1) model using Quasi-Maximum Likelihood Estimation (QMLE) assuming Normal innovations. Table \ref{tbl:garch_qmle_normal} summarize the results of this estimation. 
 
-\begin{table}\label{tbl:garch_qmle_normal}
+\subsubsection{QML Estimates for GARCH with Normal Distribution}
+
+To weaken the assumption of normality in the innovation process, I estimate the GARCH(1,1) model using Quasi-Maximum Likelihood Estimation (QMLE) assuming Normal innovations. Table \ref{tbl:garch_qmle_normal} summarizes the results of this estimation.
+
+\begin{table}
     \centering
-    \caption{Estimated GARCH(1,1) Model Parameters with QML and Normal Distribution. The table displays the estimated coefficients along with their distribution robust standard errors (in parentheses), t-statistics, and p-values.}
+    \caption{Estimated GARCH(1,1) Model Parameters with QML and Normal Distribution. The table displays the estimated coefficients along with their distribution-robust standard. For a comparison, table also displays the MLE standard errors from Table \ref{tbl:garch_mle_normal}, and the ratio of QML to MLE standard errors.  
+    Because of the scaling the estimated paramter $\omega$ is in units of $100^2$, but the $\alpha$ and $\beta$, and $\alpha + \beta$ are not scaled (as these are scale invariant).}
+    \label{tbl:garch_qmle_normal}
     \include{tables/table_garch_mle_qml_comparison}
 \end{table}
 
-The estimated parameters from therger than those fomr the MLE estimation assuming normality. 
- QML estimation in table \ref{tbl:garch_qmle_normal} are same as in the MLE with normal model, as they should be. However, now the standard errors are computed using the robust sandwich estimator and are significantly la
-Where as the MLE standard errors were computed as
+The estimated parameters from QML estimation in Table \ref{tbl:garch_qmle_normal} are the same as in the MLE with the normal model, as they should be. However, the standard errors are now computed using the robust sandwich estimator and are significantly larger than those from the MLE estimation.
+The MLE standard errors were computed as
 \begin{equation}
     SE_{MLE} = \sqrt{diag(H^{-1})},
 \end{equation}
-where $H$ is the Hessian matrix of the log-likelihood function. 
-For a comparison the sandwich standard errors for the QMLE estimation are computed as
+where $H$ is the Hessian matrix of the log-likelihood function.
+For comparison, the sandwich standard errors for the QMLE estimation are computed as
 \begin{equation}
     SE_{QML} = \sqrt{diag(H^{-1} G H^{-1})},
 \end{equation}
-where $G = \sum_{t=1}^T s_t s_t'$ (outer product of score vectors), and $s_t$ is the score vector at time $t$. This form doens't make distributional assumptions similarly as the classical MLE standard errors do. 
+where $G = \sum_{t=1}^T s_t s_t'$ (outer product of score vectors), and $s_t$ is the score vector at time $t$. This form does not make distributional assumptions as the classical MLE standard errors do.
 
-Under correct specification: $G \approx H$, so $H^{-1}GH^{-1} \approx H^{-1}$ and both standard errors are similar. Thus, the large difference in the standard errors indicates violations for the normality assumption. 
+Under correct specification, $G \approx H$, so $H^{-1}GH^{-1} \approx H^{-1}$ and both standard errors are similar. Thus, the large difference in standard errors indicates violations of the normality assumption. 
 
 \subsubsection{Adequacy of Normal Distribution for Standardized Residuals}
 
-To further diagnose the Normality problem in the GARCH innovation process, I now apply the Diebold-Gunther-Tay (DGT) test with $N = 40$ cells. 
+To further diagnose the normality problem in the GARCH innovation process, I now apply the Diebold-Gunther-Tay (DGT) test with $N = 40$ cells.
 
-The tests results are presented in Table \ref{tbl:dgt_normality}. First, the uniformity results in Panle A show that the Normal distribution is not adequate for modeling the standardized residuals from the GARCH(1,1) model estimated with the conditional ML. In another words, the empirical distribution of the standardized residuals deviates significantly from the theoretical Normal distribution. Second, the Ljung-Box results in Panel B show that there is significant dependency in the standardized residuals, indicating that our model does not fully capture the dynamics of the process. 
+The test results are presented in Table \ref{tbl:dgt_normality}. First, the uniformity results in Panel A show that the Normal distribution is not adequate for modeling the standardized residuals from the GARCH(1,1) model estimated with conditional MLE. In other words, the empirical distribution of the standardized residuals deviates significantly from the theoretical Normal distribution. Second, the Ljung-Box results in Panel B show that there is significant dependence in the standardized residuals, indicating that the model does not fully capture the dynamics of the process. 
 
-\begin{table}\label{tbl:dgt_normality}
+\begin{table}
     \centering
     \caption{Diebold-Gunther-Tay Test for Adequacy of Normal Distribution for Standardized Residuals from GARCH(1,1) model estimated with QMLE. The table displays the DGT test statistics along with their p-values. The null hypothesis of the test is that the standardized residuals follow a Normal distribution. Under the null hypothesis, the DGT test statistic follows a chi-squared distribution with $N - 1$ degrees of freedom, where $N$ is the number of cells (here 40).}
+    \label{tbl:dgt_normality}
     \vspace{1.0em}
     \begin{minipage}{\linewidth}
         \centering
@@ -472,64 +488,67 @@ The tests results are presented in Table \ref{tbl:dgt_normality}. First, the uni
 \end{table}
 
 
-Overall, I reject the DGT null hypothesis that standardized innovations follow a Normal distribution. Thus, next, I consider other possible non-normal distributions.
+Overall, I reject the DGT null hypothesis that standardized innovations follow a Normal distribution. Next, I consider alternative non-normal distributions.
 
 
-\subsection{Estimation of GARCH with a Student-t}
+\subsection{Estimation of GARCH with Student-t Distribution}
 
-As previous sections show the innovations in the volatility process of the GARCH model tend to behave in a non-normal manner. Thus, in this section I will model the GARCH(1,1) process assuming the innovation $z_t$ in the definition \eqref{eq:garch_variance} follows a Studen-t distribution. 
+As previous sections show, the innovations in the volatility process of the GARCH model behave in a non-normal manner. Thus, this section models the GARCH(1,1) process assuming the innovation $z_t$ in equation \eqref{eq:garch_variance} follows a Student-t distribution. 
 
-\subsubsection{Fitting GARCH(1,1) with Student-t}
+\subsubsection{Fitting GARCH(1,1) with Student-t Distribution}
 
-Table \ref{tbl:garch_student_t} displays the estimated GARCH(1,1) model coefficients for both excess return series assuming Student-t innovations. The results are shown in the table \ref{tbl:garch_student_t}.
+Table \ref{tbl:garch_student_t} displays the estimated GARCH(1,1) model coefficients for both excess return series assuming Student-t innovations.
 
-The parameter estimates are highly similar with those estimated earlier using the Normal Distribution, which tells us that the volatility dynamics are robust to the distributional assumption. Furthermore, also the Student-t specification clearly shows that there is strong persistance in the volatility, as we can see from the table \ref{tbl:garch_student_t}.
+The parameter estimates are highly similar to those estimated earlier using the Normal distribution, which indicates that the volatility dynamics are robust to the distributional assumption. Furthermore, the Student-t specification clearly shows strong persistence in volatility.
 
-However, the degrees of freedom parameter, $\nu$, is estimated to be around 6 for stocks and around 8 for corporate bonds, implying fat tails in the innovation distribution. This further supports the evidence of non-normality in the volatility process.
+However, the degrees of freedom parameter $\nu$ is estimated to be around 6 for stocks and around 8 for corporate bonds, implying fat tails in the innovation distribution. This further supports the evidence of non-normality in the innovation process.
 
-\begin{table}\label{tbl:garch_student_t}
+\begin{table}
     \centering
     \caption{Estimated GARCH(1,1) Model for AR(1) residuals of Corporate Bond and Stock (S\&P 500) excess log returns with Student-t innovations. The table displays the estimated coefficients along with their standard errors (in parentheses), t-statistics, and p-values. The model is estimated using conditional maximum likelihood estimation (MLE) with Student-t distribution. Because of the scaling the estimated paramter $\omega$ is in units of $100^2$, but the $\alpha$ and $\beta$, and $\alpha + \beta$ are not scaled (as these are scale invariant).}
+    \label{tbl:garch_student_t}
     \include{tables/table_garch_studentt_params}
 \end{table} 
 
 
 \paragraph{Delta Method for Testing $H_0: 1/\nu = 0$}
-Now that we have estimated the GARCH(1,1) model with Student-t innovations, we apply the Delta Method to test the null hypothesis that $1/\nu = 0$, which corresponds to the case of infinite degrees of freedom, in which case the distribution is normal. 
+Having estimated the GARCH(1,1) model with Student-t innovations, I apply the delta method to test the null hypothesis that $1/\nu = 0$, which corresponds to the case of infinite degrees of freedom, in which case the distribution is normal. 
 
 The delta method provides the asymptotic distribution of transformations of maximum likelihood estimators. For a differentiable function $g(\cdot)$ and MLE $\hat{\nu}$ with asymptotic normality $\sqrt{n}(\hat{\nu} - \nu) \xrightarrow{d} N(0, \sigma_\nu^2)$, we have $\sqrt{n}(g(\hat{\nu}) - g(\nu)) \xrightarrow{d} N(0, [g'(\nu)]^2 \sigma_\nu^2)$. Applying this to $g(\nu) = 1/\nu$ with derivative $g'(\nu) = -1/\nu^2$, the asymptotic standard error is $\text{SE}(1/\hat{\nu}) = |g'(\hat{\nu})| \times \text{SE}(\hat{\nu}) = \text{SE}(\hat{\nu})/\hat{\nu}^2$, yielding the test statistic
 \begin{equation}
     t = \frac{1/\hat{\nu} - 0}{\text{SE}(1/\hat{\nu})} = \frac{\hat{\nu}}{\text{SE}(\hat{\nu})} \overset{H_0}{\sim} N(0,1).
 \end{equation}
 
-The results for the delta method are summarized in table \ref{tbl:delta_method_nu_test}, and it shows that applying the delta method we reject the null hypothesis that $1/\nu = 0$ for both corporate bonds and stocks.
+The results for the delta method are summarized in Table \ref{tbl:delta_method_nu_test}, which shows that I reject the null hypothesis that $1/\nu = 0$ for both corporate bonds and stocks.
 
-\begin{table}\label{tbl:delta_method_nu_test}
+\begin{table}
     \centering
     \caption{Delta Method Test for $H_0: 1/\nu = 0$ in GARCH(1,1) model with Student-t innovations for Corporate Bond and Stock (S\&P 500) excess log returns. The table displays the estimated degrees of freedom parameter $\hat{\nu}$, its standard error, the computed test statistic, and the corresponding p-value for the test.}
+    \label{tbl:delta_method_nu_test}
     \include{tables/table_delta_method}
 \end{table}
 
 
-However, it is worth to keep in mind that \emph{testing $H_0: 1/\nu = 0$ with Delta-Method might be problematic} because this null corresponds to the boundary point $\nu = \infty$, which lies outside the parameter space $(0,\infty)$. The standard delta method assumes linearization around a finite interior point, but at $\nu = \infty$ the derivative $g'(\nu) \to 0$, causing the first-order approximation to be not well defined. A more appropriate approach might be to test $H_0: \nu \geq \nu^\star$ for a large finite threshold $\nu^\star$, or to employ alternative tests for normality that avoid this boundary issue.
+However, it is worth noting that \emph{testing $H_0: 1/\nu = 0$ with the delta method might be problematic} because this null corresponds to the boundary point $\nu = \infty$, which lies outside the parameter space $(0,\infty)$. The standard delta method assumes linearization around a finite interior point, but at $\nu = \infty$ the derivative $g'(\nu) \to 0$, causing the first-order approximation to be ill-defined. A more appropriate approach might be to test $H_0: \nu \geq \nu^\star$ for a large finite threshold $\nu^\star$, or to employ alternative tests for normality that avoid this boundary issue.
 
 
 
-\subsubsection{Test of Adequacy of Student-t on GARCH(1,1) residuals}
+\subsubsection{Test of Adequacy of Student-t Distribution for GARCH(1,1) Residuals}
 
-Now that we have estimated the GARCH(1,1) model with Student-t innovations, I will test the adequacy of the Student-t distribution for modeling the standardized residuals from the GARCH model using the DGT test, similarly to what we did with normal distribution in previous section.
+Having estimated the GARCH(1,1) model with Student-t innovations, I test the adequacy of the Student-t distribution for modeling the standardized residuals from the GARCH model using the DGT test, similar to the Normal distribution in the previous section.
 
-Table \ref{tbl:dgt_studentt} displays the results of the DGT test for adequacy of Student-t distribution for standardized residuals from the GARCH(1,1) model estimated with Student-t innovations.
+Table \ref{tbl:dgt_studentt} displays the results of the DGT test for adequacy of the Student-t distribution for standardized residuals from the GARCH(1,1) model estimated with Student-t innovations.
 
-Looking first at the uniformity test in panel A of table \ref{tbl:dgt_studentt}. For stocks we reject the uniformity null hypothesis and note that the statistic values are very large. This implies that the Student-t GARCH density is not calibrated for equities and the realized innovations fall too often in some regions relative to what the model predicts. For corporate bonds, we fail to reject the null hypothesis of uniformity, indicating that the Student-t distribution looks calibrated good for corporate bonds.
+Looking first at the uniformity test in Panel A of Table \ref{tbl:dgt_studentt}, for stocks I reject the uniformity null hypothesis and note that the statistic values are very large. This implies that the Student-t GARCH density is not well calibrated for equities and the realized innovations fall too often in some regions relative to what the model predicts. For corporate bonds, I fail to reject the null hypothesis of uniformity, indicating that the Student-t distribution is well calibrated for corporate bonds.
 
-However the independence test in panel B of table \ref{tbl:dgt_studentt} show that for both stocks and corporate bonds we reject the null hypothesis of independence. This means that the model is not capturing all dynamics in the conditional distribution. Especially, for corproate bonds the test statistics are very large indicating serial correlation / smoothing (stale prices, evaluated pricing), which is typical in non-traded securities. 
+However, the independence test in Panel B of Table \ref{tbl:dgt_studentt} shows that for both stocks and corporate bonds, I reject the null hypothesis of independence. This means that the model does not capture all dynamics in the conditional distribution. Especially for corporate bonds, the test statistics are very large, indicating serial correlation or smoothing (stale prices, evaluated pricing), which is typical for non-traded securities.
 
-To conclude, for both asset classes DGT test rejects the null hypothesis that innovations from GARCH(1,1) follow Student-t distribution. 
+To conclude, for both asset classes the DGT test rejects the null hypothesis that innovations from GARCH(1,1) follow a Student-t distribution. 
 
 \begin{table}
     \centering
     \caption{Diebold-Gunther-Tay Test for Adequacy of Student-t Distribution for Standardized Residuals from GARCH(1,1) model estimated with Student-t innovations. }
+    \label{tbl:dgt_studentt}
     \vspace{1.0em}
     \begin{minipage}{\linewidth}
         \centering
@@ -549,41 +568,43 @@ To conclude, for both asset classes DGT test rejects the null hypothesis that in
 
 
 
-\subsection{Estimation of GARCH with a Skewed Student-t}
+\subsection{Estimation of GARCH with Skewed Student-t Distribution}
 
-As observed in the previous section, using Student-t distribution for the innovations in the GARCH(1,1) model provided a slight improvement over the Normal distribution, but still failed to adequately capture the characteristics of the standardized residuals. In this section, we expand on this by estimating the GARCH(1,1) model assuming that the innovations follow a Skewed Student-t distribution, which allows for both fat tails and skewness in the distribution of innovations.
+As observed in the previous section, using the Student-t distribution for the innovations in the GARCH(1,1) model provided a slight improvement over the Normal distribution but still failed to adequately capture the characteristics of the standardized residuals. This section estimates the GARCH(1,1) model assuming that the innovations follow a Skewed Student-t distribution, which allows for both fat tails and skewness in the distribution of innovations.
 
-Here, to fit the skewed Student-t distribution, we use the parameterization proposed by \citet{hansen1994autoregressive}. 
+To fit the Skewed Student-t distribution, I use the parameterization proposed by \citet{hansen1994autoregressive}. 
 
-\subsubsection{Fitting GARCH(1,1) with Skewed Student-t}
+\subsubsection{Fitting GARCH(1,1) with Skewed Student-t Distribution}
 
 Table \ref{tbl:garch_skewed_student_t} displays the estimated GARCH(1,1) model coefficients for both excess return residual series assuming Skewed Student-t innovations.
 
-The estimation results yield very similar GARCH(1,1) estimates as Normal distribution in Table \ref{tbl:garch_qmle_normal}, and the symmetric Student-t distribution in \ref{tbl:garch_student_t}. Overall, the volatility dynamics appear robust to the distributional assumption, and the persistance in volatility shocks remains high across all specifications.
+The estimation results yield very similar GARCH(1,1) estimates to the Normal distribution in Table \ref{tbl:garch_qmle_normal} and the symmetric Student-t distribution in Table \ref{tbl:garch_student_t}. Overall, the volatility dynamics appear robust to the distributional assumption, and the persistence in volatility shocks remains high across all specifications.
 
-\begin{table}\label{tbl:garch_skewed_student_t}
+\begin{table}
     \centering
     \caption{Estimated GARCH(1,1) Model for AR(1) residuals of Corporate Bond and Stock (S\&P 500) excess log returns with Skewed Student-t innovations. The table displays the estimated coefficients along with their standard errors (in parentheses), t-statistics, and p-values. The model is estimated using conditional maximum likelihood estimation (MLE) with Skewed Student-t distribution. Because of the scaling the estimated paramter $\omega$ is in units of $100^2$, but the $\alpha$ and $\beta$, and $\alpha + \beta$ are not scaled (as these are scale invariant).}
+    \label{tbl:garch_skewed_student_t}
     \include{tables/table_garch_skewt_params}
 \end{table}
 
-Interestingly in table \ref{tbl:garch_skewed_student_t} we see that the degrees of freedom parameter, $\nu$, is estimated to be around 7 for stocks and around 9 for corporate bonds, similar to the symmetric Student-t case, indicating fat tails in the innovation distribution. Furthermore, the skewness parameter, $\lambda$, is estimated to be negative for both asset classes, suggesting that the innovation distribution is left-skewed, which is consistent with the common observation of negative skewness in financial return distributions.
+Interestingly, Table \ref{tbl:garch_skewed_student_t} shows that the degrees of freedom parameter $\nu$ is estimated to be around 7 for stocks and around 9 for corporate bonds, similar to the symmetric Student-t case, indicating fat tails in the innovation distribution. Furthermore, the skewness parameter $\lambda$ is estimated to be negative for both asset classes, suggesting that the innovation distribution is left-skewed, which is consistent with the common observation of negative skewness in financial return distributions.
 
-The skewness parameter is also statistically significant at 1\% confidence level for both asset classes, indicating that the skewness is an important feature of the innovation distribution that should be accounted for in the model. 
+The skewness parameter is also statistically significant at the 1\% level for both asset classes, indicating that skewness is an important feature of the innovation distribution that should be accounted for in the model. 
 
-\paragraph{Joint Wald Test for $H_0: 1/\eta = 0$ AND $\lambda = 0$} is applied simiarly as with earlier with the delta method for testing normality in the Student-t case, howerver now we consider the joint test for both fat tails and skewness.
-Taking derivatives of the transformation vector $\mathbf{g}(\boldsymbol{\theta}) = [1/\eta, \lambda]'$ I get the Jacobian $\mathbf{G} = \text{diag}(-1/\eta^2, 1)$. Furthermore, given the asymptotic covariance is $\text{Var}(\mathbf{g}(\hat{\boldsymbol{\theta}})) = \mathbf{G} \, \text{Var}(\hat{\boldsymbol{\theta}}) \, \mathbf{G}'$, I get the yielding the test statistic
+\paragraph{Joint Test for $H_0: 1/\nu = 0$ AND $\lambda = 0$} This test is applied similarly to the delta method for testing normality in the Student-t case; however, here I consider the joint test for both fat tails and skewness.
+Taking derivatives of the transformation vector $\mathbf{g}(\boldsymbol{\theta}) = [1/\nu, \lambda]'$, I obtain the Jacobian $\mathbf{G} = \text{diag}(-1/\nu^2, 1)$. Furthermore, given the asymptotic covariance $\text{Var}(\mathbf{g}(\hat{\boldsymbol{\theta}})) = \mathbf{G} \, \text{Var}(\hat{\boldsymbol{\theta}}) \, \mathbf{G}'$, the test statistic is
 \begin{equation}
     W = \mathbf{g}(\hat{\boldsymbol{\theta}})' [\text{Var}(\mathbf{g}(\hat{\boldsymbol{\theta}}))]^{-1} \mathbf{g}(\hat{\boldsymbol{\theta}}) \overset{H_0}{\sim} \chi^2(2).
 \end{equation}
 
-However, again it is worth to keep in mind that testing $H_0: 1/\nu = 0$, might not be well defined as discussed in the previous seciton in the case of standard Student t.
+However, it is worth noting that testing $H_0: 1/\nu = 0$ might be ill-defined, as discussed in the previous section for the standard Student-t case.
 
-Table \ref{tbl:delta_test_skewt} summarizes the result of Delta method applied to the parameter vector. The table shows that we reject the null hypothesis that both $1/\nu = 0$ and $\lambda = 0$ for both corporate bonds and stocks.
+Table \ref{tbl:delta_test_skewt} summarizes the result of the delta method applied to the parameter vector. The table shows that I reject the null hypothesis that both $1/\nu = 0$ and $\lambda = 0$ for both corporate bonds and stocks.
 
-\begin{table}\label{tbl:delta_test_skewt}
+\begin{table}
     \centering
     \caption{Delta method applied to the joint test for $H_0: 1/\nu = 0$ AND $\lambda = 0$ in GARCH(1,1) model with Skewed Student-t innovations for Corporate Bond and Stock (S\&P 500)  excess log returns residuals. The table displays the computed test statistic along with its p-value for the test.}
+    \label{tbl:delta_test_skewt}
     \include{tables/table_joint_wald_skewt}
 
 \end{table}
@@ -591,21 +612,22 @@ Table \ref{tbl:delta_test_skewt} summarizes the result of Delta method applied t
 
 
 
-\subsubsection{Test of Adequacy of Skwed Student-t on GARCH(1,1) residuals}
+\subsubsection{Test of Adequacy of Skewed Student-t Distribution for GARCH(1,1) Residuals}
 
-Now we test the adequacy of the Skewed Student-t distribution for modeling the standardized residuals from the GARCH model using the DGT test, similarly to what we did with normal and symmetric Student-t distributions in previous sections. Table \ref{tbl:dgt_skewt}
+I now test the adequacy of the Skewed Student-t distribution for modeling the standardized residuals from the GARCH model using the DGT test, similar to the normal and symmetric Student-t distributions in previous sections.
 
-Similarly to earlier sections, Table \ref{tbl:dgt_skewt} rejects the null the standardized garch residuals  in the GARCH(1,1) model \eqref{eq:garch_residuals} follow a Skewed Student-t distribution.
+Similar to earlier sections, Table \ref{tbl:dgt_skewt} rejects the null hypothesis that the standardized GARCH residuals in the GARCH(1,1) model \eqref{eq:garch_residuals} follow a Skewed Student-t distribution.
 
-As earlier, the Panel B of the table shows that there is significant autocorrelation in the residuals for both asset classes, indicating that the model is not capturing all dynamics in the conditional distribution.
+As earlier, Panel B shows that there is significant autocorrelation in the residuals for both asset classes, indicating that the model does not capture all dynamics in the conditional distribution.
 
-In terms of uniformity in panel A of the table \ref{tbl:dgt_skewt}, the conclusions are similar to those made with standard Student-t distribution, meaning that for stocks we reject the uniformity null hypothesis and for corporate bonds we fail to reject the null hypothesis of uniformity. 
+Regarding uniformity in Panel A of Table \ref{tbl:dgt_skewt}, the conclusions are similar to those with the standard Student-t distribution: for stocks I reject the uniformity null hypothesis, while for corporate bonds I fail to reject it.
 
-However, it is worth to emphasize that the uniformity test statistic for stocks is significantly smaller than with standard Student-t distribution, indicating that the Skewed Student-t distribution provides a better fit for stocks and the asymmetry in skewness is an important feature to capture in the innovation distribution.
+However, it is worth emphasizing that the uniformity test statistic for stocks is significantly smaller than with the standard Student-t distribution, indicating that the Skewed Student-t distribution provides a better fit for stocks and that the asymmetry in skewness is an important feature to capture in the innovation distribution.
 
-\begin{table}\label{tbl:dgt_skewt}
+\begin{table}
     \centering
-    \caption{Diebold-Gunther-Tay Test for Adequacy of Skewed Student-t Distribution for Standardized Residuals from GARCH(1,1) model estimated with Skewed Student-t innovations.}
+    \caption{Diebold-Gunther-Tay Test for Adequacy of Skewed Student-t Distribution for Standardized Residuals from GARCH(1,1) model estimated with Skewed Student-t innovations. The table displays the DGT test statistics along with their p-values. The null hypothesis of the test is that the standardized residuals follow a Skewed Student-t distribution. Under the null hypothesis, the DGT test statistic follows a chi-squared distribution with $N - 1$ degrees of freedom, where $N$ is the number of cells (here 40).}
+    \label{tbl:dgt_skewt}
     \vspace{1.0em}
     \begin{minipage}{\linewidth}
         \centering
@@ -621,13 +643,13 @@ However, it is worth to emphasize that the uniformity test statistic for stocks 
 \end{table}
 
 
-\subsubsection{Samlple Moments of Normal ML GARCH vs Theoretical Moments from Skewed Student-t}
+\subsubsection{Sample Moments of Normal ML GARCH vs. Theoretical Moments from Skewed Student-t}
 
-The results this far illustrate that even though the Skewed Student-t distriubtion was rejected by the DGT test, it has been the most well fitting when compared to the Normal Distribution, and the Standard Student-t distribution.
+The results thus far illustrate that even though the Skewed Student-t distribution was rejected by the DGT test, it has been the best fitting distribution when compared to the Normal and standard Student-t distributions.
 
-To further validate the distribution, in this section I compare the theoretical moments from the skewed student distribution, that are computed based on the estimated parameters in table \ref{tbl:garch_skewed_student_t}, to the empirical moments  that are calculated from the standarized residuals $\hat z_t$ of the Normal model in section \ref{sec:garch_normal}. The comparison of the moments is presented in Table \ref{tbl:compare_moments}.
+To further validate the distribution, I compare the theoretical moments from the Skewed Student-t distribution, computed based on the estimated parameters in Table \ref{tbl:garch_skewed_student_t}, to the empirical moments calculated from the standardized residuals $\hat z_t$ of the Normal model in Section \ref{sec:garch_normal}. The comparison of the moments is presented in Table \ref{tbl:compare_moments}.
 
-The theoretical moments that are used in the table are described in the appendix \ref{sec:skewtt_moments}.
+The theoretical moments that are used in the table are described in the Appendix \ref{sec:skewtt_moments}.
 
 % Hansen (1994) skewed Student-t as implemented in arch.univariate.SkewStudent
 % Parameters: df nu>2, skew lambda in (-1,1)
@@ -636,53 +658,59 @@ The theoretical moments that are used in the table are described in the appendix
 
 \begin{table}
     \centering
+    \caption{Comparison of Theoretical Moments from Skewed Student-t Distribution vs. Sample Moments from Standardized Residuals of Normal GARCH(1,1) Model for Corporate Bond and Stock (S\&P 500). The table displays the theoretical moments (mean, variance, skewness, kurtosis) computed from the Skewed Student-t distribution using the estimated parameters from the GARCH(1,1) model with Skewed Student-t innovations, alongside the empirical moments calculated from the standardized residuals of the Normal GARCH(1,1) model.}
     \label{tbl:compare_moments}
-    \caption{}
     \include{tables/table_moment_comparison}
 \end{table}
 
-Overall the results in the table show that the Skewed Student-t distribution moments match well with those in the residuals. Especially we see that the two parameters of the Skewed Student-t that explain skewness and kurtosis of are necessary to capture the sample skewness and kurtosis that are empirically observed in the Normal model. 
+Overall, the results in the table show that the Skewed Student-t distribution moments match well with those in the residuals. In particular, the two parameters of the Skewed Student-t distribution that determine skewness and kurtosis are necessary to capture the sample skewness and kurtosis empirically observed in the Normal model. 
 
 
 \subsubsection{Volatility Time Series Comparison}
 
-The previous resuls have shown that even though the Skewed Student-t distribution tend to be the best fitting distribution for the GARCH innovations, the parameter estimates for the GARCH(1,1) model have remained quite stable across different distributional assumptions in the MLE. Which indicates that the estimated volatility dynamics are quite robust to the distributional assumption. 
+The previous results have shown that even though the Skewed Student-t distribution tends to be the best fitting distribution for the GARCH innovations, the parameter estimates for the GARCH(1,1) model have remained quite stable across different distributional assumptions in the MLE. This indicates that the estimated volatility dynamics are quite robust to the distributional assumption.
 
-These observations are further confirmed by the figure \ref{fig:volatility_comparison} that plots the conditional volatilities for each of the the three models. 
+These observations are further confirmed by Figure \ref{fig:volatility_comparison}, which plots the conditional volatilities for each of the three models. 
 
-\begin{figure}[htbp]\label{fig:volatility_comparison}
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{figures/volatility_comparison.pdf}
     \caption{Comparison of Conditional Volatilities from GARCH(1,1) models estimated with Normal, Student-t, and Skewed Student-t innovations for Corporate Bond and Stock (S\&P 500) excess log returns. The plots show the time series of conditional volatilities estimated from each model, highlighting the similarities and differences in volatility dynamics across different distributional assumptions.}
+    \label{fig:volatility_comparison}
 \end{figure}
 
-The figure \ref{fig:volatility_comparison} shows through out the sample forecasted volatilities have behaved similarly across all three distributional assumptions.
+Figure \ref{fig:volatility_comparison} shows that throughout the sample, forecasted volatilities have behaved similarly across all three distributional assumptions.
 
-To further analyze the differneces between the different models Figure \ref{fig:vol_diff} plots all the pairwise differences in the conditional volatilities from the three models. For stocks we see that the normal model tends underestimate the volatility relative to the other two models, especially during high volatility periods. Furthermore, the standard Student-t and Skewed Student-t models produce very similar volatility estimates (notice the scale of the difference is very small), but the Skewed Student-t model produces systematically larger volatility estimates than the standard Student-t model.
+To further analyze the differences between the models, Figure \ref{fig:vol_diff} plots all pairwise differences in the conditional volatilities from the three models. For stocks, the Normal model tends to underestimate volatility relative to the other two models, especially during high volatility periods. Furthermore, the standard Student-t and Skewed Student-t models produce very similar volatility estimates (note that the scale of the difference is very small), but the Skewed Student-t model produces systematically larger volatility estimates than the standard Student-t model.
 
-For corporate bonds we see that the main differences arise during high volatility periods and Normal model actually tends to overestimate the volatility relative to the other two models.
+For corporate bonds, the main differences arise during high volatility periods, where the Normal model actually tends to overestimate volatility relative to the other two models.
 
-\begin{figure}\label{fig:vol_diff}
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{figures/volatility_differences.pdf}
     \caption{Difference in Conditional Volatilities between GARCH(1,1) models estimated with Normal, Student-t, and Skewed Student-t innovations for Corporate Bond and Stock (S\&P 500) excess log returns. The plots show the time series of differences in conditional volatilities between each pair of models, highlighting the magnitude and patterns of differences in volatility estimates across different distributional assumptions.}
+    \label{fig:vol_diff}
 \end{figure}
 
 \section{Conclusion}
-In this report, I first analyzed the characteristics of typical financial timeseries, and then proceeded to model the volatility dynamics of corporate bond and stock excess log returns using GARCH(1,1) models with different innovation distributions.
+This report first analyzed the characteristics of typical financial time series, and then proceeded to model the volatility dynamics of corporate bond and stock excess log returns using GARCH(1,1) models with different innovation distributions.
 
-From the comparisons between Normal, Student-t, and Skewed Student-t distributions for the standardized GARCH  innovations, I find that the best describnig distribution is the Skewed Student-t distribution, which captures both the fat tails and skewness observed in the financial return series. 
-
-
+From the comparisons between Normal, Student-t, and Skewed Student-t distributions for the standardized GARCH innovations, I find that the best fitting distribution is the Skewed Student-t distribution, which captures both the fat tails and skewness observed in the financial return series. 
 
 
 \newpage
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+
 \newpage
+
+
 \appendix
 
 
 \section{Skewed-t Distribution Moments}\label{sec:skewtt_moments}
-The following definitions follow \citet{hansen1994autoregressive} definition for Skewed Student-t distribution. Let $Z \sim \text{SkewStudent}(\nu,\lambda)$ with $\nu>2,\ \lambda\in(-1,1)$, and define following constannts and variables:
+The following definitions follow \citet{hansen1994autoregressive}'s definition of the Skewed Student-t distribution. Let $Z \sim \text{SkewStudent}(\nu,\lambda)$ with $\nu>2,\ \lambda\in(-1,1)$, and define the following constants and variables:
 
 % --- Constants (Hansen parametrization) ---
 \begin{equation*}
@@ -756,11 +784,17 @@ m_4 &:= \mathbb{E}[Z^4]
 % Consistency check: for lambda=0, a=0, b=1 and Z reduces to standardized Student-t:
 % E[Z^3]=0, E[Z^4]=3(\nu-2)/(\nu-4).
 
-
+\newpage
 \section{Python Libraries}
 
-\bibliographystyle{plainnat}
-\bibliography{references}
+\begin{itemize}
+    \item Main library for ARCH type modelling is \texttt{arch}, version 5.3.1.
+    \item For some timeseries tests I used \texttt{statsmodels}, version 0.14.0.
+    \item Many of the tests used in this project are coded by myself, and the code is available at the start of the notebook
+\end{itemize}
+
+
+
 
 \end{document}
 
