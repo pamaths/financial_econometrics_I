@@ -73,7 +73,6 @@ _version.py
 *.pdfsync
 *.dvi
 *.ps
-*.pdf
 *.thm
 *.upa
 *.upb

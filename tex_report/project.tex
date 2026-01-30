@@ -365,8 +365,30 @@ Looking at the Table \ref{tbl:garch_11}, I note that the coefficients for both s
 Furthermore, the sum of the $\alpha$ and $\beta$ coefficients, also known as the persistence parameter, is close to 1 for both series, indicating high persistence in volatility shocks. This suggests that volatility shocks have a long-lasting effect and spikes in volatility decay slowly over time.
 
 
-\subsection{MLE or QMLE}
+\subsection{MLE or QMLE}\label{sec:garch_normal}
 The previous section showed that there is significant persistence in volatility shocks for both excess return series. In this section I will analyze the adequacy of Normal distribution for modeling the shocks in the GARCH innovation process. 
+
+The analysis in this section and in the next section applies Diebold-Gunther-Tay (DGT) test for goodness-of-fit of the assumed distribution for the GARCH innovations. The test and the way I apply it is described as follows: 
+
+% [TODO explain the test procedure]
+\paragraph{DGT Test Implementation Details}  Let a fitted GARCH model deliver conditional volatility $\hat\sigma_t$ and standardized innovations
+$$
+\hat z_t = \frac{\hat\varepsilon_t}{\hat\sigma_t},
+$$
+together with an assumed innovation CDF $F$ for $z_t$ (e.g.\ Gaussian, Student-$t$, skew-$t$). The DGT test evaluates the adequacy of the conditional distribution by forming the probability integral transforms (PITs)
+$$
+u_t = F(\hat z_t).
+$$
+Under correct specification of both the volatility dynamics and the innovation distribution, the PITs then satisfy
+$$
+u_t \stackrel{iid}{\sim} U(0,1).
+$$
+
+I then implement the test in two parts. First, I check uniformity by partitioning $[0,1]$ into $N$ ($N = 40$) equal bins, let $F_n$ be the number of $u_t$ in bin $n$, and compute Pearson's statistic
+$$
+\mathrm{DGT}(N) = \sum_{n=1}^N \frac{(F_n - T/N)^2}{T/N} \;\;\sim\;\; \chi^2(N-1)
+$$
+under $H_0$. Second, to check independence and dynamics I define centered PITs $v_t=u_t-1/2$ and apply a Ljung--Box test at lag $10$ to $v_t$ (and optionally higher moments), where the reported p-value corresponds to the joint null of no autocorrelation up to lag $m$. In the code, $u_t$ is computed as $F(\hat z_t)$ using the chosen $F$, the chi-square test uses the binned PIT counts, and the Ljung--Box test is applied to $v_t^k$ for selected moments $k$.
 
 \subsubsection{Estimate ML estimates for GARCH with Normal Distribution}
 
@@ -423,17 +445,13 @@ where $G = \sum_{t=1}^T s_t s_t'$ (outer product of score vectors), and $s_t$ is
 
 Under correct specification: $G \approx H$, so $H^{-1}GH^{-1} \approx H^{-1}$ and both standard errors are similar. Thus, the large difference in the standard errors indicates violations for the normality assumption. 
 
-\subsubsection{Adequation of Normal Distribution for Standardized Residuals}
+\subsubsection{Adequacy of Normal Distribution for Standardized Residuals}
 
 To further diagnose the Normality problem in the GARCH innovation process, I now apply the Diebold-Gunther-Tay (DGT) test with $N = 40$ cells. 
 
-[TODO explain the test procedure]
+The tests results are presented in Table \ref{tbl:dgt_normality}. First, the uniformity results in Panle A show that the Normal distribution is not adequate for modeling the standardized residuals from the GARCH(1,1) model estimated with the conditional ML. In another words, the empirical distribution of the standardized residuals deviates significantly from the theoretical Normal distribution. Second, the Ljung-Box results in Panel B show that there is significant dependency in the standardized residuals, indicating that our model does not fully capture the dynamics of the process. 
 
-The tests results are presented in Table \ref{tbl:dgt_normality}. First considering uniformity I reject the null hypothesis
-
-Further more for autocorrelations we see that ... 
-
-\begin{table}
+\begin{table}\label{tbl:dgt_normality}
     \centering
     \caption{Diebold-Gunther-Tay Test for Adequacy of Normal Distribution for Standardized Residuals from GARCH(1,1) model estimated with QMLE. The table displays the DGT test statistics along with their p-values. The null hypothesis of the test is that the standardized residuals follow a Normal distribution. Under the null hypothesis, the DGT test statistic follows a chi-squared distribution with $N - 1$ degrees of freedom, where $N$ is the number of cells (here 40).}
     \vspace{1.0em}
@@ -454,7 +472,7 @@ Further more for autocorrelations we see that ...
 \end{table}
 
 
-Overall, the DGT test results for validity of normal distribution for standardized innovations in the GARCH(1,1) model is rejected. Thus, next we consider other possible non-normal distributions.
+Overall, I reject the DGT null hypothesis that standardized innovations follow a Normal distribution. Thus, next, I consider other possible non-normal distributions.
 
 
 \subsection{Estimation of GARCH with a Student-t}
@@ -603,13 +621,141 @@ However, it is worth to emphasize that the uniformity test statistic for stocks 
 \end{table}
 
 
-\subsubsection{}
+\subsubsection{Samlple Moments of Normal ML GARCH vs Theoretical Moments from Skewed Student-t}
+
+The results this far illustrate that even though the Skewed Student-t distriubtion was rejected by the DGT test, it has been the most well fitting when compared to the Normal Distribution, and the Standard Student-t distribution.
+
+To further validate the distribution, in this section I compare the theoretical moments from the skewed student distribution, that are computed based on the estimated parameters in table \ref{tbl:garch_skewed_student_t}, to the empirical moments  that are calculated from the standarized residuals $\hat z_t$ of the Normal model in section \ref{sec:garch_normal}. The comparison of the moments is presented in Table \ref{tbl:compare_moments}.
+
+The theoretical moments that are used in the table are described in the appendix \ref{sec:skewtt_moments}.
+
+% Hansen (1994) skewed Student-t as implemented in arch.univariate.SkewStudent
+% Parameters: df nu>2, skew lambda in (-1,1)
+
+
+
+\begin{table}
+    \centering
+    \label{tbl:compare_moments}
+    \caption{}
+    \include{tables/table_moment_comparison}
+\end{table}
+
+Overall the results in the table show that the Skewed Student-t distribution moments match well with those in the residuals. Especially we see that the two parameters of the Skewed Student-t that explain skewness and kurtosis of are necessary to capture the sample skewness and kurtosis that are empirically observed in the Normal model. 
+
+
+\subsubsection{Volatility Time Series Comparison}
+
+The previous resuls have shown that even though the Skewed Student-t distribution tend to be the best fitting distribution for the GARCH innovations, the parameter estimates for the GARCH(1,1) model have remained quite stable across different distributional assumptions in the MLE. Which indicates that the estimated volatility dynamics are quite robust to the distributional assumption. 
+
+These observations are further confirmed by the figure \ref{fig:volatility_comparison} that plots the conditional volatilities for each of the the three models. 
+
+\begin{figure}[htbp]\label{fig:volatility_comparison}
+    \centering
+    \includegraphics[width=\textwidth]{figures/volatility_comparison.pdf}
+    \caption{Comparison of Conditional Volatilities from GARCH(1,1) models estimated with Normal, Student-t, and Skewed Student-t innovations for Corporate Bond and Stock (S\&P 500) excess log returns. The plots show the time series of conditional volatilities estimated from each model, highlighting the similarities and differences in volatility dynamics across different distributional assumptions.}
+\end{figure}
+
+The figure \ref{fig:volatility_comparison} shows through out the sample forecasted volatilities have behaved similarly across all three distributional assumptions.
+
+To further analyze the differneces between the different models Figure \ref{fig:vol_diff} plots all the pairwise differences in the conditional volatilities from the three models. For stocks we see that the normal model tends underestimate the volatility relative to the other two models, especially during high volatility periods. Furthermore, the standard Student-t and Skewed Student-t models produce very similar volatility estimates (notice the scale of the difference is very small), but the Skewed Student-t model produces systematically larger volatility estimates than the standard Student-t model.
+
+For corporate bonds we see that the main differences arise during high volatility periods and Normal model actually tends to overestimate the volatility relative to the other two models.
+
+\begin{figure}\label{fig:vol_diff}
+    \centering
+    \includegraphics[width=\textwidth]{figures/volatility_differences.pdf}
+    \caption{Difference in Conditional Volatilities between GARCH(1,1) models estimated with Normal, Student-t, and Skewed Student-t innovations for Corporate Bond and Stock (S\&P 500) excess log returns. The plots show the time series of differences in conditional volatilities between each pair of models, highlighting the magnitude and patterns of differences in volatility estimates across different distributional assumptions.}
+\end{figure}
+
+\section{Conclusion}
+In this report, I first analyzed the characteristics of typical financial timeseries, and then proceeded to model the volatility dynamics of corporate bond and stock excess log returns using GARCH(1,1) models with different innovation distributions.
+
+From the comparisons between Normal, Student-t, and Skewed Student-t distributions for the standardized GARCH  innovations, I find that the best describnig distribution is the Skewed Student-t distribution, which captures both the fat tails and skewness observed in the financial return series. 
+
 
 
 
 \newpage
+\newpage
 \appendix
-\cite{drechsler2017deposits}
+
+
+\section{Skewed-t Distribution Moments}\label{sec:skewtt_moments}
+The following definitions follow \citet{hansen1994autoregressive} definition for Skewed Student-t distribution. Let $Z \sim \text{SkewStudent}(\nu,\lambda)$ with $\nu>2,\ \lambda\in(-1,1)$, and define following constannts and variables:
+
+% --- Constants (Hansen parametrization) ---
+\begin{equation*}
+c = \frac{\Gamma\!\left(\frac{\nu+1}{2}\right)}{\sqrt{\pi(\nu-2)}\,\Gamma\!\left(\frac{\nu}{2}\right)},
+\end{equation*}
+
+\begin{equation*}
+a = 4\lambda\,c\,\frac{\nu-2}{\nu-1},
+\qquad
+b = \sqrt{1+3\lambda^2-a^2}.
+\end{equation*}
+
+% Under this parametrization E[Z]=0 and Var(Z)=1.
+\begin{equation*}
+Y := a + bZ.
+\end{equation*}
+
+For $Y$ we have obtain
+% --- Raw moments of Y ---
+\begin{equation*}
+\mathbb{E}[Y] = a,
+\qquad
+\mathbb{E}[Y^2] = 1+3\lambda^2,
+\end{equation*}
+
+\begin{equation*}
+\mathbb{E}[Y^3]
+=
+16\,\lambda(1+\lambda^2)\,c\,\frac{(\nu-2)^2}{(\nu-1)(\nu-3)}
+\quad (\text{for } \nu>3),
+\end{equation*}
+and 
+\begin{equation*}
+\mathbb{E}[Y^4]
+=
+\frac{3(\nu-2)}{\nu-4}\,\bigl(1+10\lambda^2+5\lambda^4\bigr)
+\quad (\text{for } \nu>4).
+\end{equation*}
+
+Lastly using the calcualted moments for $Y$ and then solving for the moments of $Z$ we obtain the four following moments that are used in the report
+
+% --- First four moments of Z ---
+\begin{equation*}
+m_1:=\mathbb{E}[Z]=0,
+\qquad
+m_2:=\mathbb{E}[Z^2]=1.
+\end{equation*}
+
+\begin{align*}
+m_3 &:= \mathbb{E}[Z^3]
+=
+\frac{\mathbb{E}[(Y-a)^3]}{b^3} \\
+&=
+\frac{\mathbb{E}[Y^3]-3a\,\mathbb{E}[Y^2]+2a^3}{b^3} \\
+&=
+\frac{\mathbb{E}[Y^3]-3a(1+3\lambda^2)+2a^3}{b^3}
+\quad (\text{for } \nu>3).
+\end{align*}
+
+\begin{align*}
+m_4 &:= \mathbb{E}[Z^4]
+=
+\frac{\mathbb{E}[(Y-a)^4]}{b^4} \\
+&=
+\frac{\mathbb{E}[Y^4]-4a\,\mathbb{E}[Y^3]+6a^2\,\mathbb{E}[Y^2]-3a^4}{b^4} \\
+&=
+\frac{\mathbb{E}[Y^4]-4a\,\mathbb{E}[Y^3]+6a^2(1+3\lambda^2)-3a^4}{b^4}
+\quad (\text{for } \nu>4).
+\end{align*}
+
+% Consistency check: for lambda=0, a=0, b=1 and Z reduces to standardized Student-t:
+% E[Z^3]=0, E[Z^4]=3(\nu-2)/(\nu-4).
+
 
 \section{Python Libraries}
 
